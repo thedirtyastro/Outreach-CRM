@@ -1,0 +1,13 @@
+export { connectDB } from "./connection";
+export { Lead } from "./schemas/lead.schema";
+export { Activity } from "./schemas/activity.schema";
+export { Email, EmailEvent } from "./schemas/email.schema";
+export { FollowUp } from "./schemas/followup.schema";
+export { Meeting } from "./schemas/meeting.schema";
+export { Note } from "./schemas/note.schema";
+export { Template } from "./schemas/template.schema";
+export { Notification } from "./schemas/notification.schema";
+export { Settings } from "./schemas/settings.schema";
+export { Attachment } from "./schemas/attachment.schema";
+export { Tag } from "./schemas/tag.schema";
+export { User } from "./schemas/user.schema";
