@@ -93,11 +93,11 @@ export function AttachmentsTab({ leadId }: AttachmentsTabProps) {
   async function handleDelete(attachment: IAttachment) {
     try {
       const res = await fetch(
-        `/api/leads/${leadId}/attachments?attachmentId=${attachment._id}`,
+        `/api/leads/${leadId}/attachments?attachmentId=${attachment.id}`,
         { method: "DELETE" }
       );
       if (!res.ok) throw new Error();
-      setAttachments((prev) => prev.filter((a) => a._id !== attachment._id));
+      setAttachments((prev) => prev.filter((a) => a.id !== attachment.id));
       toast.success("Attachment deleted");
     } catch {
       toast.error("Failed to delete attachment");
@@ -160,7 +160,7 @@ export function AttachmentsTab({ leadId }: AttachmentsTabProps) {
         <div className="space-y-2">
           {attachments.map((att, i) => (
             <motion.div
-              key={att._id}
+              key={att.id}
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}

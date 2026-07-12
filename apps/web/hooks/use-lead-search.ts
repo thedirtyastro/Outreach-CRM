@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import type { ILead } from "@outreach/shared";
 
 export interface LeadSearchResult {
-  _id: string;
+  id: string;
   name: string;
   company?: string;
   email?: string;
@@ -46,7 +46,7 @@ export function useLeadSearch(debounceMs = 300) {
         const leads: ILead[] = json.data?.data ?? [];
         setResults(
           leads.map((l) => ({
-            _id: l._id,
+            id: l.id,
             name: l.name,
             company: l.company,
             email: l.email,

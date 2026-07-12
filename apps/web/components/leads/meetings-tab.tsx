@@ -180,7 +180,7 @@ export function MeetingsTab({ leadId }: MeetingsTabProps) {
     try {
       const res = await fetch(`/api/meetings/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      setMeetings((prev) => prev.filter((m) => m._id !== id));
+      setMeetings((prev) => prev.filter((m) => m.id !== id));
       toast.success("Meeting deleted");
     } catch {
       toast.error("Failed to delete meeting");
@@ -214,7 +214,7 @@ export function MeetingsTab({ leadId }: MeetingsTabProps) {
             const colorClass = MEETING_TYPE_COLOR[meeting.type] ?? MEETING_TYPE_COLOR.other;
             return (
               <motion.div
-                key={meeting._id}
+                key={meeting.id}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
@@ -228,7 +228,7 @@ export function MeetingsTab({ leadId }: MeetingsTabProps) {
                     <div className="flex items-center justify-between gap-2">
                       <h4 className="text-sm font-medium truncate">{meeting.title}</h4>
                       <button
-                        onClick={() => handleDelete(meeting._id)}
+                        onClick={() => handleDelete(meeting.id)}
                         className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive p-1 rounded"
                         aria-label="Delete meeting"
                       >

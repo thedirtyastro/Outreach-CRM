@@ -81,7 +81,7 @@ function TemplateCard({ template, onDelete }: { template: ITemplate; onDelete: (
           variant="ghost"
           size="sm"
           className="gap-1.5 h-7 text-xs text-destructive hover:text-destructive ml-auto"
-          onClick={() => onDelete(template._id)}
+          onClick={() => onDelete(template.id)}
         >
           <Trash2 className="w-3.5 h-3.5" />
         </Button>
@@ -218,7 +218,7 @@ export default function TemplatesPage() {
   async function handleDelete(id: string) {
     const res = await fetch(`/api/templates/${id}`, { method: "DELETE" });
     if (res.ok) {
-      setTemplates((prev) => prev.filter((t) => t._id !== id));
+      setTemplates((prev) => prev.filter((t) => t.id !== id));
       toast.success("Template deleted");
     }
   }
@@ -274,7 +274,7 @@ export default function TemplatesPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((t) => (
-              <TemplateCard key={t._id} template={t} onDelete={handleDelete} />
+              <TemplateCard key={t.id} template={t} onDelete={handleDelete} />
             ))}
           </div>
         )}

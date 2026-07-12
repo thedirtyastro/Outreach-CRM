@@ -59,7 +59,7 @@ export async function listEmails(options: ListEmailsOptions) {
     .range(from, to);
 
   if (leadId) query = query.eq("lead_id", leadId);
-  if (status) query = query.eq("status", status);
+  if (status) query = query.eq("status", status as never);
 
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);
@@ -210,7 +210,10 @@ export async function deleteEmail(id: string, userId: string): Promise<boolean> 
   return (count ?? 0) > 0;
 }
 
-const RESEND_EVENT_TYPE_MAP: Record<string, string> = {
+import type { EmailEventType } from "@outreach/database";
+import type { ActivityType } from "@outreach/database";
+
+const RESEND_EVENT_TYPE_MAP: Record<string, EmailEventType> = {
   "email.delivered": "delivered",
   "email.opened": "opened",
   "email.clicked": "clicked",
@@ -218,7 +221,7 @@ const RESEND_EVENT_TYPE_MAP: Record<string, string> = {
   "email.complained": "complained",
 };
 
-const ACTIVITY_TYPE_MAP: Record<string, string> = {
+const ACTIVITY_TYPE_MAP: Record<string, ActivityType> = {
   opened: "email_opened",
   clicked: "email_clicked",
 };

@@ -187,7 +187,7 @@ async function saveLeadToCrm(profile: ProfileData, apiKey: string) {
 
     if (res.status === 409) {
       const json = await res.json();
-      const dupId: string = json.data?._id ?? "";
+      const dupId: string = json.data?.id ?? "";
       const dupBanner = $("dupBanner");
       dupBanner.style.display = "block";
       const dupLink = $("dupLink");

@@ -39,7 +39,7 @@ interface ReplyState {
 export function ThreadView({ emails, onReplySuccess }: ThreadViewProps) {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
     // Expand the last email by default
-    () => new Set(emails.length > 0 ? [emails[emails.length - 1]._id] : [])
+    () => new Set(emails.length > 0 ? [emails[emails.length - 1].id] : [])
   );
   const [showReply, setShowReply] = useState(false);
   const [reply, setReply] = useState<ReplyState>({ body: "", isSubmitting: false });
@@ -73,7 +73,7 @@ export function ThreadView({ emails, onReplySuccess }: ThreadViewProps) {
           leadId: latest.leadId,
           subject: `Re: ${threadSubject}`,
           body: reply.body,
-          threadId: latest.threadId ?? latest._id,
+          threadId: latest.threadId ?? latest.id,
         }),
       });
 
@@ -105,16 +105,16 @@ export function ThreadView({ emails, onReplySuccess }: ThreadViewProps) {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto divide-y divide-border/50">
         {emails.map((email, idx) => {
-          const isExpanded = expandedIds.has(email._id);
+          const isExpanded = expandedIds.has(email.id);
           const isLast = idx === emails.length - 1;
           const StatusIcon = STATUS_ICON[email.status] ?? Mail;
 
           return (
-            <div key={email._id} className={cn("px-5 py-3", isLast && "pb-4")}>
+            <div key={email.id} className={cn("px-5 py-3", isLast && "pb-4")}>
               {/* Message header — always visible */}
               <button
                 type="button"
-                onClick={() => toggleExpand(email._id)}
+                onClick={() => toggleExpand(email.id)}
                 className="w-full flex items-center gap-3 text-left group"
               >
                 <div className={cn("shrink-0", STATUS_COLOR[email.status])}>

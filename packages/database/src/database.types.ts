@@ -24,16 +24,54 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-type InsertRow<T> = Omit<T, "id" | "created_at" | "updated_at"> &
-  Partial<Pick<T, "id" | "created_at" | "updated_at">>;
+/**
+ * Helper: Remap a type to a plain object with an implicit index signature.
+ * Required because @supabase/postgrest-js checks `Row extends Record<string, unknown>`.
+ * TypeScript interfaces don't satisfy that check, but mapped types do.
+ */
+type ToRecord<T> = { [K in keyof T]: T[K] } & Record<string, unknown>;
 
-type UpdateRow<T> = Partial<Omit<T, "id" | "created_at">>;
+/**
+ * Helper: keys from K that actually exist in T.
+ */
+type ExistingKeys<T, K extends string> = Extract<keyof T, K>;
+
+/**
+ * Extract required keys from T (keys that are NOT optional via ?).
+ */
+type RequiredKeys<T> = { [K in keyof T]-?: undefined extends T[K] ? never : K }[keyof T];
+
+/**
+ * Extract optional keys from T.
+ */
+type OptionalKeysOf<T> = Exclude<keyof T, RequiredKeys<T>>;
+
+/**
+ * Auto-generated fields that should always be optional in Insert.
+ */
+type AutoFields = "id" | "created_at" | "updated_at";
+
+/**
+ * For inserts: Auto-generated fields + explicitly listed default fields become optional.
+ * D = additional field names that have SQL defaults.
+ */
+type InsertRow<T, D extends string = never> =
+  & { [K in Exclude<RequiredKeys<T>, ExistingKeys<T, AutoFields | D>>]: T[K] }
+  & { [K in OptionalKeysOf<T> | ExistingKeys<T, AutoFields | D>]?: T[K] }
+  & Record<string, unknown>;
+
+/**
+ * For updates: all fields optional EXCEPT id/created_at which are excluded.
+ */
+type UpdateRow<T> =
+  & { [K in Exclude<keyof T, ExistingKeys<T, "id" | "created_at">>]?: T[K] }
+  & Record<string, unknown>;
 
 export interface Database {
   public: {
     Tables: {
       activities: {
-        Row: Activity;
+        Row: ToRecord<Activity>;
         Insert: InsertRow<Activity>;
         Update: UpdateRow<Activity>;
         Relationships: [
@@ -46,7 +84,7 @@ export interface Database {
         ];
       };
       attachments: {
-        Row: Attachment;
+        Row: ToRecord<Attachment>;
         Insert: InsertRow<Attachment>;
         Update: UpdateRow<Attachment>;
         Relationships: [
@@ -65,8 +103,8 @@ export interface Database {
         ];
       };
       emails: {
-        Row: Email;
-        Insert: InsertRow<Email>;
+        Row: ToRecord<Email>;
+        Insert: InsertRow<Email, "status" | "attachments">;
         Update: UpdateRow<Email>;
         Relationships: [
           {
@@ -78,7 +116,7 @@ export interface Database {
         ];
       };
       email_events: {
-        Row: EmailEvent;
+        Row: ToRecord<EmailEvent>;
         Insert: InsertRow<EmailEvent>;
         Update: UpdateRow<EmailEvent>;
         Relationships: [
@@ -97,8 +135,8 @@ export interface Database {
         ];
       };
       follow_ups: {
-        Row: FollowUp;
-        Insert: InsertRow<FollowUp>;
+        Row: ToRecord<FollowUp>;
+        Insert: InsertRow<FollowUp, "status" | "is_recurring">;
         Update: UpdateRow<FollowUp>;
         Relationships: [
           {
@@ -110,14 +148,14 @@ export interface Database {
         ];
       };
       leads: {
-        Row: Lead;
-        Insert: InsertRow<Lead>;
+        Row: ToRecord<Lead>;
+        Insert: InsertRow<Lead, "tags" | "priority" | "status" | "response" | "is_archived">;
         Update: UpdateRow<Lead>;
         Relationships: [];
       };
       meetings: {
-        Row: Meeting;
-        Insert: InsertRow<Meeting>;
+        Row: ToRecord<Meeting>;
+        Insert: InsertRow<Meeting, "type">;
         Update: UpdateRow<Meeting>;
         Relationships: [
           {
@@ -129,8 +167,8 @@ export interface Database {
         ];
       };
       notes: {
-        Row: Note;
-        Insert: InsertRow<Note>;
+        Row: ToRecord<Note>;
+        Insert: InsertRow<Note, "is_pinned" | "attachments">;
         Update: UpdateRow<Note>;
         Relationships: [
           {
@@ -142,8 +180,8 @@ export interface Database {
         ];
       };
       notifications: {
-        Row: Notification;
-        Insert: InsertRow<Notification>;
+        Row: ToRecord<Notification>;
+        Insert: InsertRow<Notification, "type" | "is_read">;
         Update: UpdateRow<Notification>;
         Relationships: [
           {
@@ -155,25 +193,25 @@ export interface Database {
         ];
       };
       settings: {
-        Row: Settings;
-        Insert: InsertRow<Settings>;
+        Row: ToRecord<Settings>;
+        Insert: InsertRow<Settings, "theme" | "notif_email" | "notif_desktop" | "notif_follow_up_reminder" | "notif_meeting_reminder" | "email_track_opens" | "email_track_clicks" | "timezone">;
         Update: UpdateRow<Settings>;
         Relationships: [];
       };
       tags: {
-        Row: Tag;
-        Insert: InsertRow<Tag>;
+        Row: ToRecord<Tag>;
+        Insert: InsertRow<Tag, "color">;
         Update: UpdateRow<Tag>;
         Relationships: [];
       };
       templates: {
-        Row: Template;
-        Insert: InsertRow<Template>;
+        Row: ToRecord<Template>;
+        Insert: InsertRow<Template, "type" | "variables" | "is_default">;
         Update: UpdateRow<Template>;
         Relationships: [];
       };
       user: {
-        Row: User;
+        Row: ToRecord<User>;
         Insert: InsertRow<User>;
         Update: UpdateRow<User>;
         Relationships: [];

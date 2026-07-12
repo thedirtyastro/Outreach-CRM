@@ -51,7 +51,7 @@ function FollowUpCard({
     >
       {/* Complete button */}
       <button
-        onClick={() => onComplete(followUp._id)}
+        onClick={() => onComplete(followUp.id)}
         disabled={followUp.status === "completed"}
         className={cn(
           "mt-0.5 w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors",
@@ -85,7 +85,7 @@ function FollowUpCard({
       </div>
 
       <button
-        onClick={() => onDelete(followUp._id)}
+        onClick={() => onDelete(followUp.id)}
         className="text-muted-foreground hover:text-destructive transition-colors mt-0.5 shrink-0"
         aria-label="Delete"
       >
@@ -198,7 +198,7 @@ export default function FollowUpsPage() {
       body: JSON.stringify({ status: "completed" }),
     });
     if (res.ok) {
-      setFollowUps((prev) => prev.map((f) => f._id === id ? { ...f, status: "completed" as const } : f));
+      setFollowUps((prev) => prev.map((f) => f.id === id ? { ...f, status: "completed" as const } : f));
       toast.success("Marked as complete");
     }
   }
@@ -206,7 +206,7 @@ export default function FollowUpsPage() {
   async function handleDelete(id: string) {
     const res = await fetch(`/api/followups/${id}`, { method: "DELETE" });
     if (res.ok) {
-      setFollowUps((prev) => prev.filter((f) => f._id !== id));
+      setFollowUps((prev) => prev.filter((f) => f.id !== id));
       toast.success("Follow-up deleted");
     }
   }
@@ -273,7 +273,7 @@ export default function FollowUpsPage() {
           <div className="space-y-2.5">
             {followUps.map((f) => (
               <FollowUpCard
-                key={f._id}
+                key={f.id}
                 followUp={f}
                 onComplete={handleComplete}
                 onDelete={handleDelete}

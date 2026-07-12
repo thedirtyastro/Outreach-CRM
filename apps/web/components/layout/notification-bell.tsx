@@ -100,9 +100,9 @@ export function NotificationBell() {
                 const Icon = TYPE_ICON[n.type] ?? Info;
                 return (
                   <button
-                    key={n._id}
+                    key={n.id}
                     onClick={() => {
-                      if (!n.isRead) void markRead([n._id]);
+                      if (!n.isRead) void markRead([n.id]);
                     }}
                     className={cn(
                       "w-full text-left px-4 py-3 transition-colors hover:bg-muted/40 group",

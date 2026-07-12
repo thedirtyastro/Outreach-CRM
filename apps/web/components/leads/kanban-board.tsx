@@ -64,7 +64,7 @@ function KanbanCard({ lead, isDragging, onStatusChange, onDelete }: KanbanCardPr
   const router = useRouter();
   const {
     attributes, listeners, setNodeRef, transform, transition, isDragging: sortableDragging,
-  } = useSortable({ id: lead._id });
+  } = useSortable({ id: lead.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -95,7 +95,7 @@ function KanbanCard({ lead, isDragging, onStatusChange, onDelete }: KanbanCardPr
           <div className="min-w-0">
             <button
               onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => router.push(`/dashboard/leads/${lead._id}`)}
+              onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
               className="text-sm font-medium truncate block hover:text-primary transition-colors text-left"
             >
               {lead.name}
@@ -120,7 +120,7 @@ function KanbanCard({ lead, isDragging, onStatusChange, onDelete }: KanbanCardPr
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem
               onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => router.push(`/dashboard/leads/${lead._id}`)}
+              onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
             >
               View details
             </DropdownMenuItem>
@@ -128,14 +128,14 @@ function KanbanCard({ lead, isDragging, onStatusChange, onDelete }: KanbanCardPr
               <DropdownMenuItem
                 key={col.key}
                 onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => onStatusChange(lead._id, col.key)}
+                onClick={() => onStatusChange(lead.id, col.key)}
               >
                 Move to {col.label}
               </DropdownMenuItem>
             ))}
             <DropdownMenuItem
               onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => onDelete(lead._id)}
+              onClick={() => onDelete(lead.id)}
               className="text-destructive focus:text-destructive"
             >
               Delete
@@ -209,12 +209,12 @@ function KanbanColumn({
         )}
       >
         <SortableContext
-          items={leads.map((l) => l._id)}
+          items={leads.map((l) => l.id)}
           strategy={verticalListSortingStrategy}
         >
           {leads.map((lead) => (
             <KanbanCard
-              key={lead._id}
+              key={lead.id}
               lead={lead}
               onStatusChange={onStatusChange}
               onDelete={onDelete}
@@ -253,7 +253,7 @@ export function KanbanBoard({ leads, onLeadsUpdate, onAddLead }: KanbanBoardProp
     return acc;
   }, {});
 
-  const activeLead = activeId ? leads.find((l) => l._id === activeId) ?? null : null;
+  const activeLead = activeId ? leads.find((l) => l.id === activeId) ?? null : null;
 
   function handleDragStart(e: DragStartEvent) {
     setActiveId(String(e.active.id));
@@ -273,18 +273,18 @@ export function KanbanBoard({ leads, onLeadsUpdate, onAddLead }: KanbanBoardProp
       newStatus = over.id as LeadStatus;
     } else {
       // Dropped on a card — find that card's column
-      const targetLead = leads.find((l) => l._id === over.id);
-      if (targetLead && targetLead._id !== leadId) {
+      const targetLead = leads.find((l) => l.id === over.id);
+      if (targetLead && targetLead.id !== leadId) {
         newStatus = targetLead.status;
       }
     }
 
-    const currentLead = leads.find((l) => l._id === leadId);
+    const currentLead = leads.find((l) => l.id === leadId);
     if (!newStatus || !currentLead || currentLead.status === newStatus) return;
 
     // Optimistic update
     const updated = leads.map((l) =>
-      l._id === leadId ? { ...l, status: newStatus! } : l
+      l.id === leadId ? { ...l, status: newStatus! } : l
     );
     onLeadsUpdate(updated);
 
@@ -304,7 +304,7 @@ export function KanbanBoard({ leads, onLeadsUpdate, onAddLead }: KanbanBoardProp
   }
 
   async function handleStatusChange(id: string, status: LeadStatus) {
-    const updated = leads.map((l) => (l._id === id ? { ...l, status } : l));
+    const updated = leads.map((l) => (l.id === id ? { ...l, status } : l));
     onLeadsUpdate(updated);
     try {
       const res = await fetch(`/api/leads/${id}`, {
@@ -325,7 +325,7 @@ export function KanbanBoard({ leads, onLeadsUpdate, onAddLead }: KanbanBoardProp
     try {
       const res = await fetch(`/api/leads/${id}`, { method: "DELETE" });
       if (res.ok) {
-        onLeadsUpdate(leads.filter((l) => l._id !== id));
+        onLeadsUpdate(leads.filter((l) => l.id !== id));
         toast.success("Lead deleted");
       }
     } catch {

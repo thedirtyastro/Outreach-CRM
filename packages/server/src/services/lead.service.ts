@@ -140,10 +140,10 @@ export async function listLeads(options: ListLeadsOptions): Promise<PaginatedRes
       `name.ilike.%${search}%,company.ilike.%${search}%,email.ilike.%${search}%`
     );
   }
-  if (status?.length) query = query.in("status", status);
-  if (platform?.length) query = query.in("platform", platform);
-  if (priority?.length) query = query.in("priority", priority);
-  if (response?.length) query = query.in("response", response);
+  if (status?.length) query = query.in("status", status as never);
+  if (platform?.length) query = query.in("platform", platform as never);
+  if (priority?.length) query = query.in("priority", priority as never);
+  if (response?.length) query = query.in("response", response as never);
   if (tags?.length) query = query.overlaps("tags", tags);
   if (dateFrom) query = query.gte("created_at", dateFrom);
   if (dateTo) query = query.lte("created_at", dateTo);

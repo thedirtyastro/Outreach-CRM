@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     if (error) throw error;
     if (!data) return Response.json({ success: false, error: "Lead not found" } satisfies ApiResponse, { status: 404 });
 
-    return Response.json({ success: true, data } satisfies ApiResponse<ILead>);
+    return Response.json({ success: true, data: data as unknown as ILead } satisfies ApiResponse<ILead>);
   } catch (error) {
     console.error("[leads/[id]] GET error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });
@@ -79,7 +79,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       await supabase.from("activities").insert({ user_id: userId, lead_id: id, type: "lead_updated", description: `Lead ${lead.name} was updated`, icon: "pencil" });
     }
 
-    return Response.json({ success: true, data: lead } satisfies ApiResponse<ILead>);
+    return Response.json({ success: true, data: lead as unknown as ILead } satisfies ApiResponse<ILead>);
   } catch (error) {
     console.error("[leads/[id]] PATCH error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });

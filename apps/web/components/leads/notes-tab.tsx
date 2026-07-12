@@ -62,7 +62,7 @@ export function NotesTab({ leadId }: NotesTabProps) {
 
   async function handlePin(note: INote) {
     try {
-      const res = await fetch(`/api/notes/${note._id}`, {
+      const res = await fetch(`/api/notes/${note.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isPinned: !note.isPinned }),
@@ -71,7 +71,7 @@ export function NotesTab({ leadId }: NotesTabProps) {
       const updated = await res.json();
       setNotes((prev) =>
         prev
-          .map((n) => (n._id === note._id ? updated : n))
+          .map((n) => (n.id === note.id ? updated : n))
           .sort((a, b) => Number(b.isPinned) - Number(a.isPinned))
       );
     } catch {
@@ -83,7 +83,7 @@ export function NotesTab({ leadId }: NotesTabProps) {
     try {
       const res = await fetch(`/api/notes/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
-      setNotes((prev) => prev.filter((n) => n._id !== id));
+      setNotes((prev) => prev.filter((n) => n.id !== id));
       toast.success("Note deleted");
     } catch {
       toast.error("Failed to delete note");
@@ -156,7 +156,7 @@ export function NotesTab({ leadId }: NotesTabProps) {
         <div className="space-y-2.5">
           {notes.map((note, i) => (
             <motion.div
-              key={note._id}
+              key={note.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
@@ -180,7 +180,7 @@ export function NotesTab({ leadId }: NotesTabProps) {
                       : <Pin className="w-3.5 h-3.5" />}
                   </button>
                   <button
-                    onClick={() => handleDelete(note._id)}
+                    onClick={() => handleDelete(note.id)}
                     className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-destructive"
                     aria-label="Delete note"
                   >

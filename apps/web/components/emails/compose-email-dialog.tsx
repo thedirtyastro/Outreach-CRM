@@ -106,7 +106,7 @@ export function ComposeEmailDialog({
   }, [body, leadId, open]);
 
   function applyTemplate(templateId: string) {
-    const tmpl = templates.find((t) => t._id === templateId);
+    const tmpl = templates.find((t) => t.id === templateId);
     if (!tmpl) return;
     setValue("subject", tmpl.subject);
     setValue("body", tmpl.body);
@@ -186,7 +186,7 @@ export function ComposeEmailDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {templates.map((t) => (
-                    <SelectItem key={t._id} value={t._id}>{t.name}</SelectItem>
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

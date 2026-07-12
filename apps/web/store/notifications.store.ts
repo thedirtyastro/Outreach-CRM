@@ -32,11 +32,11 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
     const idSet = new Set(ids);
     const prev = get();
     const readCount = prev.notifications.filter(
-      (n) => idSet.has(n._id) && !n.isRead
+      (n) => idSet.has(n.id) && !n.isRead
     ).length;
     set({
       notifications: prev.notifications.map((n) =>
-        idSet.has(n._id) ? { ...n, isRead: true } : n
+        idSet.has(n.id) ? { ...n, isRead: true } : n
       ),
       unreadCount: Math.max(0, prev.unreadCount - readCount),
     });

@@ -37,7 +37,7 @@ interface AnalyticsData {
     statusDistribution: Array<{ status: string; count: number }>;
   };
   recentActivities: Array<{
-    _id: string;
+    id: string;
     type: string;
     description: string;
     createdAt: string;

@@ -69,15 +69,15 @@ export function EmailsTab({ leadId }: EmailsTabProps) {
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             {emails.map((email, i) => (
               <motion.button
-                key={email._id}
+                key={email.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.04 }}
-                onClick={() => setSelected(selected?._id === email._id ? null : email)}
+                onClick={() => setSelected(selected?.id === email.id ? null : email)}
                 className={cn(
                   "w-full text-left px-4 py-3 border-b border-border last:border-0",
                   "hover:bg-muted/20 transition-colors",
-                  selected?._id === email._id && "bg-muted/20"
+                  selected?.id === email.id && "bg-muted/20"
                 )}
               >
                 <div className="flex items-center justify-between gap-2 mb-0.5">

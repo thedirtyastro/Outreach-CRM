@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     return Response.json(
-      { success: true, data: template } satisfies ApiResponse<ITemplate>,
+      { success: true, data: template as unknown as ITemplate } satisfies ApiResponse<ITemplate>,
       { status: 201 }
     );
   } catch (error) {

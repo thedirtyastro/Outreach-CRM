@@ -116,7 +116,7 @@ export function LeadEditDialog({ lead, open, onOpenChange, onSuccess }: LeadEdit
       const cleaned = Object.fromEntries(
         Object.entries(data).filter(([, v]) => v !== "" && v !== undefined)
       );
-      const res = await fetch(`/api/leads/${lead._id}`, {
+      const res = await fetch(`/api/leads/${lead.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(cleaned),

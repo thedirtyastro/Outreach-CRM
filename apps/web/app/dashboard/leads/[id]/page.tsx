@@ -428,19 +428,19 @@ export default function LeadDetailPage({
                   className="p-5"
                 >
                   {activeTab === "activity" && (
-                    <ActivityFeed leadId={lead._id} limit={25} />
+                    <ActivityFeed leadId={lead.id} limit={25} />
                   )}
                   {activeTab === "notes" && (
-                    <NotesTab leadId={lead._id} />
+                    <NotesTab leadId={lead.id} />
                   )}
                   {activeTab === "emails" && (
-                    <EmailsTab leadId={lead._id} />
+                    <EmailsTab leadId={lead.id} />
                   )}
                   {activeTab === "meetings" && (
-                    <MeetingsTab leadId={lead._id} />
+                    <MeetingsTab leadId={lead.id} />
                   )}
                   {activeTab === "attachments" && (
-                    <AttachmentsTab leadId={lead._id} />
+                    <AttachmentsTab leadId={lead.id} />
                   )}
                 </motion.div>
               </AnimatePresence>

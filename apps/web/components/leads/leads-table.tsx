@@ -195,7 +195,7 @@ export function LeadsTable() {
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem
                 className="gap-2"
-                onClick={() => router.push(`/dashboard/leads/${lead._id}`)}
+                onClick={() => router.push(`/dashboard/leads/${lead.id}`)}
               >
                 <ExternalLink className="w-4 h-4" />
                 View details
@@ -203,14 +203,14 @@ export function LeadsTable() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="gap-2"
-                onClick={() => handleArchive(lead._id)}
+                onClick={() => handleArchive(lead.id)}
               >
                 <Archive className="w-4 h-4" />
                 Archive
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="gap-2 text-destructive focus:text-destructive"
-                onClick={() => handleDelete(lead._id)}
+                onClick={() => handleDelete(lead.id)}
               >
                 <Trash2 className="w-4 h-4" />
                 Delete
@@ -272,7 +272,7 @@ export function LeadsTable() {
                     const target = e.target as HTMLElement;
                     if (target.closest("[data-radix-popper-content-wrapper]")) return;
                     if (target.closest("button")) return;
-                    router.push(`/dashboard/leads/${row.original._id}`);
+                    router.push(`/dashboard/leads/${row.original.id}`);
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (

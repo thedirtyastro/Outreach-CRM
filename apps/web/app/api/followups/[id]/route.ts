@@ -28,12 +28,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.recurringInterval !== undefined) updates.recurring_interval = body.recurringInterval;
     if (body.recurringUnit !== undefined) updates.recurring_unit = body.recurringUnit;
 
-    const { data, error } = await supabase.from("follow_ups").update(updates).eq("id", id).eq("user_id", userId).select().single();
+    const { data, error } = await supabase.from("follow_ups").update(updates as never).eq("id", id).eq("user_id", userId).select().single();
     if (error) throw error;
     if (!data) return Response.json({ success: false, error: "Follow-up not found" } satisfies ApiResponse, { status: 404 });
 
     if (body.status === "completed") {
-      await supabase.from("activities").insert({ user_id: userId, lead_id: data.lead_id, type: "follow_up_completed", description: `Follow-up completed: ${data.title}`, icon: "check-circle" });
+      await supabase.from("activities").insert({
+        user_id: userId,
+        lead_id: (data as Record<string, unknown>).lead_id as string,
+        type: "follow_up_completed" as const,
+        description: `Follow-up completed: ${(data as Record<string, unknown>).title}`,
+        icon: "check-circle",
+      } as never);
     }
 
     return Response.json({ success: true, data } satisfies ApiResponse);

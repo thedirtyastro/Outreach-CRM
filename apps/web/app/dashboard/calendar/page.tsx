@@ -26,7 +26,7 @@ const TYPE_COLORS = {
 
 interface PopulatedMeeting extends Omit<IMeeting, "leadId"> {
   leadId: {
-    _id: string;
+    id: string;
     name: string;
     company?: string;
     email?: string;
@@ -58,7 +58,7 @@ export default function CalendarPage() {
       if (fuJson.success) {
         for (const f of fuJson.data?.data ?? []) {
           evts.push({
-            id: f._id,
+            id: f.id,
             title: f.title,
             date: new Date(f.dueDate),
             type: "followup",
@@ -73,7 +73,7 @@ export default function CalendarPage() {
       for (const m of meetings) {
         const lead = typeof m.leadId === "object" && m.leadId !== null ? m.leadId : null;
         evts.push({
-          id: m._id,
+          id: m.id,
           title: m.title,
           date: new Date(m.startTime),
           type: "meeting",

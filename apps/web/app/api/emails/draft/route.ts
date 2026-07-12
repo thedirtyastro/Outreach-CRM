@@ -23,8 +23,8 @@ export async function POST(request: NextRequest) {
     const { data: draft, error } = await supabase.from("emails").insert({
       user_id: session.user.id, lead_id: validated.leadId,
       subject: validated.subject, body: validated.body,
-      from: session.user.email, to: lead.email ?? "",
-      status: "draft",
+      from: session.user.email, to: (lead as unknown as { email: string | null }).email ?? "",
+      status: "draft" as const,
     }).select().single();
 
     if (error) throw error;

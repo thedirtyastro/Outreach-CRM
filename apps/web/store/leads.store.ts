@@ -103,12 +103,12 @@ export const useLeadsStore = create<LeadsState>((set) => ({
 
   updateLead: (id, updates) =>
     set((state) => ({
-      leads: state.leads.map((l) => (l._id === id ? { ...l, ...updates } : l)),
+      leads: state.leads.map((l) => (l.id === id ? { ...l, ...updates } : l)),
     })),
 
   removeLead: (id) =>
     set((state) => ({
-      leads: state.leads.filter((l) => l._id !== id),
+      leads: state.leads.filter((l) => l.id !== id),
       total: Math.max(0, state.total - 1),
       selectedIds: new Set([...state.selectedIds].filter((s) => s !== id)),
     })),
@@ -116,7 +116,7 @@ export const useLeadsStore = create<LeadsState>((set) => ({
   removeLeads: (ids) => {
     const idSet = new Set(ids);
     set((state) => ({
-      leads: state.leads.filter((l) => !idSet.has(l._id)),
+      leads: state.leads.filter((l) => !idSet.has(l.id)),
       total: Math.max(0, state.total - ids.length),
       selectedIds: new Set(
         [...state.selectedIds].filter((s) => !idSet.has(s))

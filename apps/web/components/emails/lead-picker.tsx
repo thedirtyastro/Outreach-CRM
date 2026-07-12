@@ -50,7 +50,7 @@ export function LeadPicker({
   }
 
   function handleSelect(lead: LeadSearchResult) {
-    onChange(lead._id, lead);
+    onChange(lead.id, lead);
     setSelectedLabel(`${lead.name}${lead.company ? ` · ${lead.company}` : ""}`);
     setOpen(false);
     search(""); // clear internal query
@@ -112,7 +112,7 @@ export function LeadPicker({
           ) : (
             <ul role="listbox" className="max-h-52 overflow-y-auto">
               {results.map((lead) => (
-                <li key={lead._id}>
+                <li key={lead.id}>
                   <button
                     type="button"
                     role="option"

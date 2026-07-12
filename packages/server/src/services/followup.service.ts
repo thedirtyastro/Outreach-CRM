@@ -57,7 +57,7 @@ export async function listFollowUps(options: ListFollowUpsOptions): Promise<Pagi
     .order("due_date", { ascending: true })
     .range(from, to);
 
-  if (status?.length) query = query.in("status", status);
+  if (status?.length) query = query.in("status", status as never);
   if (leadId) query = query.eq("lead_id", leadId);
 
   const { data, count, error } = await query;
