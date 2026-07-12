@@ -5,6 +5,27 @@ import { supabase } from "@outreach/database/client";
 import { updateLeadSchema } from "@outreach/shared";
 import type { ApiResponse, ILead } from "@outreach/shared";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function rowToLead(r: any): ILead {
+  return {
+    id: r.id, userId: r.user_id, name: r.name,
+    company: r.company ?? undefined, designation: r.designation ?? undefined,
+    industry: r.industry ?? undefined, email: r.email ?? undefined,
+    phone: r.phone ?? undefined, whatsapp: r.whatsapp ?? undefined,
+    website: r.website ?? undefined, linkedin: r.linkedin ?? undefined,
+    twitter: r.twitter ?? undefined, instagram: r.instagram ?? undefined,
+    github: r.github ?? undefined, portfolio: r.portfolio ?? undefined,
+    location: r.location ?? undefined, bio: r.bio ?? undefined,
+    profileImage: r.profile_image ?? undefined, tags: r.tags ?? [],
+    priority: r.priority, status: r.status, platform: r.platform, response: r.response,
+    budget: r.budget ?? undefined, expectedRevenue: r.expected_revenue ?? undefined,
+    projectType: r.project_type ?? undefined, lastContact: r.last_contact ?? undefined,
+    nextFollowUp: r.next_follow_up ?? undefined, score: r.score ?? undefined,
+    isArchived: r.is_archived ?? false, archivedAt: r.archived_at ?? undefined,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  };
+}
+
 type RouteParams = { params: Promise<{ id: string }> };
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
@@ -18,7 +39,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     if (error) throw error;
     if (!data) return Response.json({ success: false, error: "Lead not found" } satisfies ApiResponse, { status: 404 });
 
-    return Response.json({ success: true, data: data as unknown as ILead } satisfies ApiResponse<ILead>);
+    return Response.json({ success: true, data: rowToLead(data) } satisfies ApiResponse<ILead>);
   } catch (error) {
     console.error("[leads/[id]] GET error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });
@@ -79,7 +100,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       await supabase.from("activities").insert({ user_id: userId, lead_id: id, type: "lead_updated", description: `Lead ${lead.name} was updated`, icon: "pencil" });
     }
 
-    return Response.json({ success: true, data: lead as unknown as ILead } satisfies ApiResponse<ILead>);
+    return Response.json({ success: true, data: rowToLead(lead) } satisfies ApiResponse<ILead>);
   } catch (error) {
     console.error("[leads/[id]] PATCH error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });

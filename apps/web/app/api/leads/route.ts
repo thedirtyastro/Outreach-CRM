@@ -5,6 +5,45 @@ import { createLeadSchema } from "@outreach/shared";
 import { resolveUser } from "@outreach/server/api-key-auth";
 import type { ApiResponse, PaginatedResponse, ILead } from "@outreach/shared";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function rowToLead(r: any): ILead {
+  return {
+    id: r.id,
+    userId: r.user_id,
+    name: r.name,
+    company: r.company ?? undefined,
+    designation: r.designation ?? undefined,
+    industry: r.industry ?? undefined,
+    email: r.email ?? undefined,
+    phone: r.phone ?? undefined,
+    whatsapp: r.whatsapp ?? undefined,
+    website: r.website ?? undefined,
+    linkedin: r.linkedin ?? undefined,
+    twitter: r.twitter ?? undefined,
+    instagram: r.instagram ?? undefined,
+    github: r.github ?? undefined,
+    portfolio: r.portfolio ?? undefined,
+    location: r.location ?? undefined,
+    bio: r.bio ?? undefined,
+    profileImage: r.profile_image ?? undefined,
+    tags: r.tags ?? [],
+    priority: r.priority,
+    status: r.status,
+    platform: r.platform,
+    response: r.response,
+    budget: r.budget ?? undefined,
+    expectedRevenue: r.expected_revenue ?? undefined,
+    projectType: r.project_type ?? undefined,
+    lastContact: r.last_contact ?? undefined,
+    nextFollowUp: r.next_follow_up ?? undefined,
+    score: r.score ?? undefined,
+    isArchived: r.is_archived ?? false,
+    archivedAt: r.archived_at ?? undefined,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const headersList = await headers();
@@ -58,7 +97,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     const result: PaginatedResponse<ILead> = {
-      data: (data ?? []) as unknown as ILead[],
+      data: (data ?? []).map(rowToLead),
       total: count ?? 0,
       page,
       limit,
@@ -132,7 +171,7 @@ export async function POST(request: NextRequest) {
 
     await supabase.from("activities").insert({ user_id: userId, lead_id: lead.id, type: "lead_created", description: `Lead ${lead.name} was created`, icon: "user-plus" });
 
-    return Response.json({ success: true, data: lead as unknown as ILead, message: "Lead created" } satisfies ApiResponse<ILead>, { status: 201 });
+    return Response.json({ success: true, data: rowToLead(lead), message: "Lead created" } satisfies ApiResponse<ILead>, { status: 201 });
   } catch (error) {
     console.error("[leads] POST error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });

@@ -6,6 +6,16 @@ import { createTemplateSchema } from "@outreach/shared";
 import type { ApiResponse, PaginatedResponse } from "@outreach/shared";
 import type { ITemplate } from "@outreach/shared";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function rowToTemplate(r: any): ITemplate {
+  return {
+    id: r.id, userId: r.user_id, name: r.name,
+    subject: r.subject, body: r.body, type: r.type,
+    variables: r.variables ?? [], isDefault: r.is_default ?? false,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const headersList = await headers();
@@ -31,7 +41,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     const result: PaginatedResponse<ITemplate> = {
-      data: (data ?? []) as unknown as ITemplate[],
+      data: (data ?? []).map(rowToTemplate),
       total: count ?? 0,
       page,
       limit,
@@ -81,7 +91,7 @@ export async function POST(request: NextRequest) {
     if (error) throw error;
 
     return Response.json(
-      { success: true, data: template as unknown as ITemplate } satisfies ApiResponse<ITemplate>,
+      { success: true, data: rowToTemplate(template) } satisfies ApiResponse<ITemplate>,
       { status: 201 }
     );
   } catch (error) {

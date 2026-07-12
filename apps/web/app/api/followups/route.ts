@@ -5,6 +5,20 @@ import { supabase } from "@outreach/database/client";
 import { createFollowUpSchema } from "@outreach/shared";
 import type { ApiResponse, PaginatedResponse, IFollowUp } from "@outreach/shared";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function rowToFollowUp(r: any): IFollowUp {
+  return {
+    id: r.id, userId: r.user_id, leadId: r.lead_id,
+    title: r.title, description: r.description ?? undefined,
+    dueDate: r.due_date, status: r.status,
+    isRecurring: r.is_recurring ?? false,
+    recurringInterval: r.recurring_interval ?? undefined,
+    recurringUnit: r.recurring_unit ?? undefined,
+    completedAt: r.completed_at ?? undefined,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const headersList = await headers();
@@ -27,7 +41,7 @@ export async function GET(request: NextRequest) {
     const { data, count, error } = await query;
     if (error) throw error;
 
-    const result: PaginatedResponse<IFollowUp> = { data: (data ?? []) as unknown as IFollowUp[], total: count ?? 0, page, limit, totalPages: Math.ceil((count ?? 0) / limit) };
+    const result: PaginatedResponse<IFollowUp> = { data: (data ?? []).map(rowToFollowUp), total: count ?? 0, page, limit, totalPages: Math.ceil((count ?? 0) / limit) };
     return Response.json({ success: true, data: result } satisfies ApiResponse<PaginatedResponse<IFollowUp>>);
   } catch (error) {
     console.error("[followups] GET error:", error);
@@ -57,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     await supabase.from("activities").insert({ user_id: userId, lead_id: parsed.data.leadId, type: "follow_up_created", description: `Follow-up scheduled: ${parsed.data.title}`, icon: "calendar-plus" });
 
-    return Response.json({ success: true, data: followUp as unknown as IFollowUp, message: "Follow-up created" } satisfies ApiResponse<IFollowUp>, { status: 201 });
+    return Response.json({ success: true, data: rowToFollowUp(followUp), message: "Follow-up created" } satisfies ApiResponse<IFollowUp>, { status: 201 });
   } catch (error) {
     console.error("[followups] POST error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });
