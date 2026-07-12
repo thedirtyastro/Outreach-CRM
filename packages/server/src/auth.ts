@@ -1,16 +1,21 @@
 import { betterAuth } from "better-auth";
-import { mongodbAdapter } from "@better-auth/mongo-adapter";
-import { MongoClient } from "mongodb";
+import { Pool } from "pg";
+import { dash } from "@better-auth/infra";
 import { resend, FROM_EMAIL } from "./resend";
 
-const client = new MongoClient(process.env.MONGODB_URI as string);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 10,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 2_000,
+});
 
 export const auth = betterAuth({
-  database: mongodbAdapter(client.db()),
+  baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  database: pool,
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
-    /** Called by better-auth's requestPasswordReset endpoint */
     sendResetPassword: async ({ user, url }) => {
       await resend.emails.send({
         from: FROM_EMAIL,
@@ -36,15 +41,21 @@ export const auth = betterAuth({
     },
   },
   session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // refresh if older than 1 day
+    expiresIn: 60 * 60 * 24 * 7,    // 7 days
+    updateAge: 60 * 60 * 24,         // refresh if older than 1 day
   },
   user: {
     additionalFields: {
       image: { type: "string", required: false },
     },
   },
-  trustedOrigins: [process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"],
+  trustedOrigins: [
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    ...(process.env.NGROK_HOSTNAME
+      ? [`https://${process.env.NGROK_HOSTNAME}`]
+      : []),
+  ],
+  plugins: [dash()],
 });
 
 export type Auth = typeof auth;

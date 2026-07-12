@@ -1,73 +1,73 @@
-import mongoose, { Schema, model, models } from "mongoose";
+export type LeadStatus =
+  | "new"
+  | "initiated"
+  | "message_sent"
+  | "viewed"
+  | "responded"
+  | "interested"
+  | "meeting_scheduled"
+  | "proposal_sent"
+  | "negotiation"
+  | "waiting"
+  | "won"
+  | "lost"
+  | "ghosted"
+  | "rejected"
+  | "archived";
 
-const leadSchema = new Schema(
-  {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    name: { type: String, required: true, trim: true },
-    company: { type: String, trim: true },
-    designation: { type: String, trim: true },
-    industry: { type: String, trim: true },
-    email: { type: String, trim: true, lowercase: true },
-    phone: { type: String, trim: true },
-    whatsapp: { type: String, trim: true },
-    website: { type: String, trim: true },
-    linkedin: { type: String, trim: true },
-    twitter: { type: String, trim: true },
-    instagram: { type: String, trim: true },
-    github: { type: String, trim: true },
-    portfolio: { type: String, trim: true },
-    location: { type: String, trim: true },
-    bio: { type: String },
-    profileImage: { type: String },
-    tags: [{ type: String }],
-    priority: {
-      type: String,
-      enum: ["low", "medium", "high", "urgent"],
-      default: "medium",
-    },
-    status: {
-      type: String,
-      enum: [
-        "new", "initiated", "message_sent", "viewed", "responded",
-        "interested", "meeting_scheduled", "proposal_sent", "negotiation",
-        "waiting", "won", "lost", "ghosted", "rejected", "archived",
-      ],
-      default: "new",
-      index: true,
-    },
-    platform: {
-      type: String,
-      enum: ["linkedin", "twitter", "instagram", "github", "website", "referral", "email", "other"],
-      required: true,
-      index: true,
-    },
-    response: {
-      type: String,
-      enum: ["positive", "negative", "neutral", "none"],
-      default: "none",
-    },
-    budget: { type: Number },
-    expectedRevenue: { type: Number },
-    projectType: {
-      type: String,
-      enum: ["web_development", "mobile_app", "design", "consulting", "maintenance", "seo", "marketing", "other"],
-    },
-    lastContact: { type: Date },
-    nextFollowUp: { type: Date },
-    score: { type: Number, min: 0, max: 100 },
-    isArchived: { type: Boolean, default: false, index: true },
-    archivedAt: { type: Date },
-  },
-  {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
-);
+export type LeadPriority = "low" | "medium" | "high" | "urgent";
+export type LeadPlatform =
+  | "linkedin"
+  | "twitter"
+  | "instagram"
+  | "github"
+  | "website"
+  | "referral"
+  | "email"
+  | "other";
+export type LeadResponse = "positive" | "negative" | "neutral" | "none";
+export type ProjectType =
+  | "web_development"
+  | "mobile_app"
+  | "design"
+  | "consulting"
+  | "maintenance"
+  | "seo"
+  | "marketing"
+  | "other";
 
-leadSchema.index({ userId: 1, createdAt: -1 });
-leadSchema.index({ userId: 1, status: 1 });
-leadSchema.index({ userId: 1, platform: 1 });
-leadSchema.index({ name: "text", company: "text", email: "text" });
-
-export const Lead = models.Lead ?? model("Lead", leadSchema);
+export interface Lead {
+  id: string;
+  user_id: string;
+  name: string;
+  company?: string | null;
+  designation?: string | null;
+  industry?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  website?: string | null;
+  linkedin?: string | null;
+  twitter?: string | null;
+  instagram?: string | null;
+  github?: string | null;
+  portfolio?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  profile_image?: string | null;
+  tags: string[];
+  priority: LeadPriority;
+  status: LeadStatus;
+  platform: LeadPlatform;
+  response: LeadResponse;
+  budget?: number | null;
+  expected_revenue?: number | null;
+  project_type?: ProjectType | null;
+  last_contact?: string | null;
+  next_follow_up?: string | null;
+  score?: number | null;
+  is_archived: boolean;
+  archived_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}

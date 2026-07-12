@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@outreach/server/auth";
-import { connectDB } from "@outreach/database/connection";
-import { Tag } from "@outreach/database/schemas/tag.schema";
+import { supabase } from "@outreach/database/client";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -21,17 +20,23 @@ export async function PATCH(
     const body = await request.json();
     const validated = updateSchema.parse(body);
 
-    await connectDB();
-    const tag = await Tag.findOneAndUpdate(
-      { _id: id, userId: session.user.id },
-      { $set: validated },
-      { new: true }
-    );
+    const { data: tag, error } = await supabase
+      .from("tags")
+      .update(validated)
+      .eq("id", id)
+      .eq("user_id", session.user.id)
+      .select()
+      .single();
 
+    if (error) throw error;
     if (!tag) return NextResponse.json({ error: "Tag not found" }, { status: 404 });
+
     return NextResponse.json(tag);
   } catch (error) {
     console.error("Error updating tag:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: "Validation failed", details: error.issues }, { status: 400 });
+    }
     return NextResponse.json({ error: "Failed to update tag" }, { status: 500 });
   }
 }
@@ -45,9 +50,15 @@ export async function DELETE(
     if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
-    await connectDB();
-    const tag = await Tag.findOneAndDelete({ _id: id, userId: session.user.id });
-    if (!tag) return NextResponse.json({ error: "Tag not found" }, { status: 404 });
+
+    const { error, count } = await supabase
+      .from("tags")
+      .delete({ count: "exact" })
+      .eq("id", id)
+      .eq("user_id", session.user.id);
+
+    if (error) throw error;
+    if (!count) return NextResponse.json({ error: "Tag not found" }, { status: 404 });
 
     return NextResponse.json({ success: true });
   } catch (error) {

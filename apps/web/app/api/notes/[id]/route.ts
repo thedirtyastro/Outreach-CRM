@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@outreach/server/auth";
-import { connectDB } from "@outreach/database/connection";
-import { Note } from "@outreach/database/schemas/note.schema";
+import { supabase } from "@outreach/database/client";
 import { z } from "zod";
 
 const updateSchema = z.object({
@@ -22,15 +21,22 @@ export async function PATCH(
     const body = await request.json();
     const validated = updateSchema.parse(body);
 
-    await connectDB();
+    const updates: Record<string, unknown> = {};
+    if (validated.content !== undefined) updates.content = validated.content;
+    if (validated.isPinned !== undefined) updates.is_pinned = validated.isPinned;
+    if (validated.attachments !== undefined) updates.attachments = validated.attachments;
 
-    const note = await Note.findOneAndUpdate(
-      { _id: id, userId: session.user.id },
-      { $set: validated },
-      { new: true }
-    );
+    const { data: note, error } = await supabase
+      .from("notes")
+      .update(updates)
+      .eq("id", id)
+      .eq("user_id", session.user.id)
+      .select()
+      .single();
 
+    if (error) throw error;
     if (!note) return NextResponse.json({ error: "Note not found" }, { status: 404 });
+
     return NextResponse.json(note);
   } catch (error) {
     console.error("Error updating note:", error);
@@ -50,10 +56,15 @@ export async function DELETE(
     if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const { id } = await params;
-    await connectDB();
 
-    const note = await Note.findOneAndDelete({ _id: id, userId: session.user.id });
-    if (!note) return NextResponse.json({ error: "Note not found" }, { status: 404 });
+    const { error, count } = await supabase
+      .from("notes")
+      .delete({ count: "exact" })
+      .eq("id", id)
+      .eq("user_id", session.user.id);
+
+    if (error) throw error;
+    if (!count) return NextResponse.json({ error: "Note not found" }, { status: 404 });
 
     return NextResponse.json({ success: true });
   } catch (error) {

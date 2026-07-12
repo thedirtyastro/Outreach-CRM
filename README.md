@@ -46,8 +46,8 @@ A full-stack CRM for freelancers and agencies to track outreach leads from Linke
 |---|---|
 | Framework | Next.js 16 (App Router) + React 19 |
 | Language | TypeScript 5 |
-| Database | MongoDB via Mongoose 9 |
-| Auth | better-auth v1 + MongoDB adapter |
+| Database | Supabase (PostgreSQL) |
+| Auth | better-auth v1 + PostgreSQL adapter |
 | Email | Resend + React Email |
 | UI | Radix UI + Tailwind CSS v4 |
 | Charts | Recharts |
@@ -74,7 +74,7 @@ outreach-crm/
 │
 ├── packages/
 │   ├── shared/              Types + Zod schemas (no Node deps — safe everywhere)
-│   ├── database/            Mongoose schemas + DB connection helper
+│   ├── database/            Supabase client, table types, SQL migrations
 │   └── server/              Service layer, auth, Resend client
 │
 ├── extension/               Chrome Extension (Manifest V3)
@@ -87,33 +87,26 @@ outreach-crm/
 ## Prerequisites
 
 - **Node.js** 20+ and **npm** 10+
-- **MongoDB** — either a local instance or a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster
+- **Supabase account** — free tier at [supabase.com](https://supabase.com) for PostgreSQL database
 - **Resend account** — for sending transactional emails ([resend.com](https://resend.com))
 
 ---
 
 ## Getting Credentials
 
-### MongoDB URI
+### Supabase
 
-**Option A — Local MongoDB**
-
-Install MongoDB Community Edition from [mongodb.com/try/download/community](https://www.mongodb.com/try/download/community), start it, and use:
-
-```
-MONGODB_URI=mongodb://localhost:27017/outreach-crm
-```
-
-**Option B — MongoDB Atlas (free tier)**
-
-1. Sign up at [cloud.mongodb.com](https://cloud.mongodb.com)
-2. Create a free M0 cluster
-3. Under **Database Access** → create a user with read/write permissions
-4. Under **Network Access** → add your IP (or `0.0.0.0/0` for development)
-5. Click **Connect → Drivers** and copy the connection string:
+1. Sign up at [supabase.com](https://supabase.com) and create a new project
+2. Go to **Project Settings → API** and copy:
    ```
-   MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/outreach-crm?retryWrites=true&w=majority
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
    ```
+3. Go to **Project Settings → Database** and copy the **Connection string** (URI mode):
+   ```
+   DATABASE_URL=postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres
+   ```
+4. Open the **SQL Editor** and run the migration at `packages/database/migrations/001_initial_schema.sql` to create all CRM tables
 
 ### Resend (Email)
 
@@ -191,7 +184,9 @@ Copy `.env.example` to `apps/web/.env.local` and set these values:
 
 | Variable | Required | Description |
 |---|---|---|
-| `MONGODB_URI` | ✅ | MongoDB connection string (local or Atlas) |
+| `NEXT_PUBLIC_SUPABASE_URL` | ✅ | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✅ | Supabase service role key (server-side only) |
+| `DATABASE_URL` | ✅ | Postgres connection string for better-auth |
 | `NEXT_PUBLIC_APP_URL` | ✅ | Public base URL — `http://localhost:3000` in dev, your domain in production |
 | `BETTER_AUTH_SECRET` | ✅ | Random 32-char string for signing sessions |
 | `RESEND_API_KEY` | ✅ | API key from [resend.com/api-keys](https://resend.com/api-keys) |

@@ -1,25 +1,20 @@
-import { Schema, model, models } from "mongoose";
+export type Theme = "dark" | "light" | "system";
 
-const settingsSchema = new Schema(
-  {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true },
-    theme: { type: String, enum: ["dark", "light", "system"], default: "dark" },
-    notifications: {
-      email: { type: Boolean, default: true },
-      desktop: { type: Boolean, default: true },
-      followUpReminder: { type: Boolean, default: true },
-      meetingReminder: { type: Boolean, default: true },
-    },
-    emailSettings: {
-      signature: { type: String },
-      defaultFrom: { type: String },
-      trackOpens: { type: Boolean, default: true },
-      trackClicks: { type: Boolean, default: true },
-    },
-    timezone: { type: String, default: "UTC" },
-    apiKey: { type: String, index: { unique: true, sparse: true } },
-  },
-  { timestamps: true }
-);
-
-export const Settings = models.Settings ?? model("Settings", settingsSchema);
+/** Flat column shape matching the Supabase `settings` table. */
+export interface Settings {
+  id: string;
+  user_id: string;
+  theme: Theme;
+  notif_email: boolean;
+  notif_desktop: boolean;
+  notif_follow_up_reminder: boolean;
+  notif_meeting_reminder: boolean;
+  email_signature?: string | null;
+  email_default_from?: string | null;
+  email_track_opens: boolean;
+  email_track_clicks: boolean;
+  timezone: string;
+  api_key?: string | null;
+  created_at: string;
+  updated_at: string;
+}

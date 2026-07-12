@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@outreach/server/auth";
-import { connectDB, Template } from "@outreach/database";
+import { supabase } from "@outreach/database/client";
 import { createTemplateSchema } from "@outreach/shared";
 import type { ApiResponse, PaginatedResponse } from "@outreach/shared";
 import type { ITemplate } from "@outreach/shared";
@@ -14,24 +14,28 @@ export async function GET(request: NextRequest) {
       return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
     }
 
-    await connectDB();
     const userId = session.user.id;
     const { searchParams } = request.nextUrl;
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
     const limit = Math.min(50, parseInt(searchParams.get("limit") ?? "20", 10));
-    const skip = (page - 1) * limit;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    const [data, total] = await Promise.all([
-      Template.find({ userId }).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      Template.countDocuments({ userId }),
-    ]);
+    const { data, count, error } = await supabase
+      .from("templates")
+      .select("*", { count: "exact" })
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
+    if (error) throw error;
 
     const result: PaginatedResponse<ITemplate> = {
-      data: data as unknown as ITemplate[],
-      total,
+      data: (data ?? []) as unknown as ITemplate[],
+      total: count ?? 0,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil((count ?? 0) / limit),
     };
 
     return Response.json({ success: true, data: result } satisfies ApiResponse<PaginatedResponse<ITemplate>>);
@@ -49,7 +53,6 @@ export async function POST(request: NextRequest) {
       return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
     }
 
-    await connectDB();
     const userId = session.user.id;
     const body = await request.json();
 
@@ -61,9 +64,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const template = await Template.create({ ...parsed.data, userId });
+    const { data: template, error } = await supabase
+      .from("templates")
+      .insert({
+        user_id: userId,
+        name: parsed.data.name,
+        subject: parsed.data.subject,
+        body: parsed.data.body,
+        type: parsed.data.type ?? "custom",
+        variables: parsed.data.variables ?? [],
+        is_default: parsed.data.isDefault ?? false,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
     return Response.json(
-      { success: true, data: template.toJSON() } satisfies ApiResponse<ITemplate>,
+      { success: true, data: template } satisfies ApiResponse<ITemplate>,
       { status: 201 }
     );
   } catch (error) {

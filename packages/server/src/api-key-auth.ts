@@ -7,8 +7,7 @@
  */
 
 import { auth } from "./auth";
-import { connectDB } from "@outreach/database/connection";
-import { Settings } from "@outreach/database/schemas/settings.schema";
+import { supabase } from "@outreach/database/client";
 
 export interface ResolvedUser {
   id: string;
@@ -25,22 +24,30 @@ export async function resolveUser(
     return { id: session.user.id, name: session.user.name, email: session.user.email };
   }
 
-  // 2. Fall back to API key
+  // 2. Fall back to API key header
   const apiKey =
     headers.get("x-api-key") ??
     headers.get("authorization")?.replace(/^Bearer\s+/i, "");
 
   if (!apiKey) return null;
 
-  await connectDB();
-  type PopulatedSettings = { userId: { _id: string; name: string; email: string } };
-  const settings = await Settings.findOne({ apiKey })
-    .select("userId")
-    .populate("userId", "name email")
-    .lean() as PopulatedSettings | null;
+  // Look up the settings row to find the user_id
+  const { data: settings } = await supabase
+    .from("settings")
+    .select("user_id")
+    .eq("api_key", apiKey)
+    .maybeSingle();
 
-  if (!settings?.userId) return null;
+  if (!settings?.user_id) return null;
 
-  const u = settings.userId;
-  return { id: String(u._id), name: u.name, email: u.email };
+  // Fetch the user from better-auth's "user" table
+  const { data: user } = await supabase
+    .from("user")
+    .select("id, name, email")
+    .eq("id", settings.user_id)
+    .maybeSingle();
+
+  if (!user) return null;
+
+  return { id: user.id, name: user.name, email: user.email };
 }

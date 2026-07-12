@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@outreach/server/auth";
-import { connectDB, Template } from "@outreach/database";
+import { supabase } from "@outreach/database/client";
 import type { ApiResponse } from "@outreach/shared";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -14,11 +14,16 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
       return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
     }
 
-    await connectDB();
     const { id } = await params;
-    const template = await Template.findOneAndDelete({ _id: id, userId: session.user.id });
 
-    if (!template) {
+    const { error, count } = await supabase
+      .from("templates")
+      .delete({ count: "exact" })
+      .eq("id", id)
+      .eq("user_id", session.user.id);
+
+    if (error) throw error;
+    if (!count) {
       return Response.json({ success: false, error: "Template not found" } satisfies ApiResponse, { status: 404 });
     }
 

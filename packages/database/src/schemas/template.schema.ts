@@ -1,20 +1,21 @@
-import { Schema, model, models } from "mongoose";
+export type TemplateType =
+  | "introduction"
+  | "follow_up"
+  | "reminder"
+  | "proposal"
+  | "meeting_confirmation"
+  | "thank_you"
+  | "custom";
 
-const templateSchema = new Schema(
-  {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    name: { type: String, required: true },
-    subject: { type: String, required: true },
-    body: { type: String, required: true },
-    type: {
-      type: String,
-      enum: ["introduction", "follow_up", "reminder", "proposal", "meeting_confirmation", "thank_you", "custom"],
-      default: "custom",
-    },
-    variables: [{ type: String }],
-    isDefault: { type: Boolean, default: false },
-  },
-  { timestamps: true }
-);
-
-export const Template = models.Template ?? model("Template", templateSchema);
+export interface Template {
+  id: string;
+  user_id: string;
+  name: string;
+  subject: string;
+  body: string;
+  type: TemplateType;
+  variables: string[];
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}

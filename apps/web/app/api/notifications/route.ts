@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@outreach/server/auth";
-import { connectDB } from "@outreach/database/connection";
-import { Notification } from "@outreach/database/schemas/notification.schema";
+import { supabase } from "@outreach/database/client";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,22 +10,27 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get("unread") === "true";
 
-    await connectDB();
+    let query = supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("created_at", { ascending: false })
+      .limit(50);
 
-    const filter: Record<string, unknown> = { userId: session.user.id };
-    if (unreadOnly) filter.isRead = false;
+    if (unreadOnly) query = query.eq("is_read", false);
 
-    const notifications = await Notification.find(filter)
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
+    const { data: notifications, error } = await query;
+    if (error) throw error;
 
-    const unreadCount = await Notification.countDocuments({
-      userId: session.user.id,
-      isRead: false,
-    });
+    const { count: unreadCount, error: countError } = await supabase
+      .from("notifications")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", session.user.id)
+      .eq("is_read", false);
 
-    return NextResponse.json({ notifications, unreadCount });
+    if (countError) throw countError;
+
+    return NextResponse.json({ notifications: notifications ?? [], unreadCount: unreadCount ?? 0 });
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json({ error: "Failed to fetch notifications" }, { status: 500 });
@@ -41,24 +45,27 @@ export async function PATCH(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const markAll = searchParams.get("markAll") === "true";
 
-    await connectDB();
-
     if (markAll) {
-      await Notification.updateMany(
-        { userId: session.user.id, isRead: false },
-        { $set: { isRead: true } }
-      );
+      const { error } = await supabase
+        .from("notifications")
+        .update({ is_read: true })
+        .eq("user_id", session.user.id)
+        .eq("is_read", false);
+
+      if (error) throw error;
       return NextResponse.json({ success: true });
     }
 
     const body = await request.json();
     const { ids } = body as { ids: string[] };
 
-    await Notification.updateMany(
-      { _id: { $in: ids }, userId: session.user.id },
-      { $set: { isRead: true } }
-    );
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .in("id", ids)
+      .eq("user_id", session.user.id);
 
+    if (error) throw error;
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error updating notifications:", error);

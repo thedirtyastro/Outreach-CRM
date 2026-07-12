@@ -6,11 +6,10 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./connection": "./src/connection.ts",
-    "./schemas/*": "./src/schemas/*.ts"
+    "./client": "./src/client.ts"
   },
   "dependencies": {
-    "mongoose": "^9.7.4"
+    "@supabase/supabase-js": "^2.49.8"
   },
   "devDependencies": {
     "typescript": "^5",

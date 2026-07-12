@@ -1,49 +1,75 @@
 /**
  * server/services/tag.service.ts
- *
- * Database operations for the Tag entity.
  */
 
-import { connectDB } from "@outreach/database";
-import { Tag } from "@outreach/database/schemas/tag.schema";
+import { supabase } from "@outreach/database/client";
 import type { ITag } from "@outreach/shared";
 
-/** List all tags for a user. */
-export async function listTags(userId: string): Promise<ITag[]> {
-  await connectDB();
-  const tags = await Tag.find({ userId }).sort({ name: 1 }).lean();
-  return tags as unknown as ITag[];
+function rowToTag(row: Record<string, unknown>): ITag {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    name: row.name as string,
+    color: row.color as string,
+    createdAt: row.created_at as string,
+  };
 }
 
-/** Create a tag. Returns null if a tag with the same name already exists. */
-export async function createTag(
-  userId: string,
-  name: string,
-  color = "#6366f1"
-): Promise<ITag | null> {
-  await connectDB();
+export async function listTags(userId: string): Promise<ITag[]> {
+  const { data, error } = await supabase
+    .from("tags")
+    .select("*")
+    .eq("user_id", userId)
+    .order("name", { ascending: true });
 
-  const existing = await Tag.findOne({ userId, name });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map(rowToTag);
+}
+
+export async function createTag(userId: string, name: string, color = "#6366f1"): Promise<ITag | null> {
+  const { data: existing } = await supabase
+    .from("tags")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("name", name)
+    .maybeSingle();
+
   if (existing) return null;
 
-  const tag = await Tag.create({ userId, name, color });
-  return tag.toObject() as unknown as ITag;
+  const { data, error } = await supabase
+    .from("tags")
+    .insert({ user_id: userId, name, color })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return rowToTag(data);
 }
 
-/** Update a tag (name / color). */
 export async function updateTag(
   id: string,
   userId: string,
   updates: Partial<{ name: string; color: string }>
 ): Promise<ITag | null> {
-  await connectDB();
-  const tag = await Tag.findOneAndUpdate({ _id: id, userId }, updates, { new: true }).lean();
-  return tag as unknown as ITag | null;
+  const { data, error } = await supabase
+    .from("tags")
+    .update(updates)
+    .eq("id", id)
+    .eq("user_id", userId)
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return data ? rowToTag(data) : null;
 }
 
-/** Delete a tag. */
 export async function deleteTag(id: string, userId: string): Promise<boolean> {
-  await connectDB();
-  const result = await Tag.findOneAndDelete({ _id: id, userId });
-  return result !== null;
+  const { error, count } = await supabase
+    .from("tags")
+    .delete({ count: "exact" })
+    .eq("id", id)
+    .eq("user_id", userId);
+
+  if (error) throw new Error(error.message);
+  return (count ?? 0) > 0;
 }

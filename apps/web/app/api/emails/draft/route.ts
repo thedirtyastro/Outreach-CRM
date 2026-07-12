@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@outreach/server/auth";
-import { connectDB } from "@outreach/database/connection";
-import { Email } from "@outreach/database/schemas/email.schema";
-import { Lead } from "@outreach/database/schemas/lead.schema";
+import { supabase } from "@outreach/database/client";
 import { z } from "zod";
 
 const draftSchema = z.object({
@@ -14,40 +12,25 @@ const draftSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
     const validated = draftSchema.parse(body);
 
-    await connectDB();
+    const { data: lead } = await supabase.from("leads").select("email").eq("id", validated.leadId).eq("user_id", session.user.id).maybeSingle();
+    if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
 
-    const lead = await Lead.findOne({
-      _id: validated.leadId,
-      userId: session.user.id,
-    }).lean();
-
-    if (!lead) {
-      return NextResponse.json({ error: "Lead not found" }, { status: 404 });
-    }
-
-    const draft = await Email.create({
-      userId: session.user.id,
-      leadId: validated.leadId,
-      subject: validated.subject,
-      body: validated.body,
-      from: session.user.email,
-      to: (lead as { email?: string }).email ?? "",
+    const { data: draft, error } = await supabase.from("emails").insert({
+      user_id: session.user.id, lead_id: validated.leadId,
+      subject: validated.subject, body: validated.body,
+      from: session.user.email, to: lead.email ?? "",
       status: "draft",
-    });
+    }).select().single();
 
+    if (error) throw error;
     return NextResponse.json({ success: true, data: draft }, { status: 201 });
   } catch (error) {
-    console.error("Error saving draft:", error);
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Validation failed", details: error.issues }, { status: 400 });
-    }
+    if (error instanceof z.ZodError) return NextResponse.json({ error: "Validation failed", details: error.issues }, { status: 400 });
     return NextResponse.json({ error: "Failed to save draft" }, { status: 500 });
   }
 }

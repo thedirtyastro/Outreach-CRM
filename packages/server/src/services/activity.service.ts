@@ -1,11 +1,22 @@
 /**
  * server/services/activity.service.ts
- *
- * Database operations for the Activity entity.
  */
 
-import { connectDB, Activity } from "@outreach/database";
+import { supabase } from "@outreach/database/client";
 import type { IActivity, PaginatedResponse } from "@outreach/shared";
+
+function rowToActivity(row: Record<string, unknown>): IActivity {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    leadId: row.lead_id as string,
+    type: row.type as IActivity["type"],
+    description: row.description as string,
+    icon: row.icon as string | undefined,
+    metadata: row.metadata as Record<string, unknown> | undefined,
+    createdAt: row.created_at as string,
+  };
+}
 
 export interface ListActivitiesOptions {
   userId: string;
@@ -14,28 +25,31 @@ export interface ListActivitiesOptions {
   limit?: number;
 }
 
-/** Paginated list of activities, optionally filtered by leadId. */
 export async function listActivities(
   options: ListActivitiesOptions
 ): Promise<PaginatedResponse<IActivity>> {
-  await connectDB();
-
   const { userId, leadId, page = 1, limit = 20 } = options;
+
   const safePage = Math.max(1, page);
   const safeLimit = Math.min(50, Math.max(1, limit));
-  const skip = (safePage - 1) * safeLimit;
+  const from = (safePage - 1) * safeLimit;
+  const to = from + safeLimit - 1;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const query: Record<string, any> = { userId };
-  if (leadId) query.leadId = leadId;
+  let query = supabase
+    .from("activities")
+    .select("*", { count: "exact" })
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
-  const [data, total] = await Promise.all([
-    Activity.find(query).sort({ createdAt: -1 }).skip(skip).limit(safeLimit).lean(),
-    Activity.countDocuments(query),
-  ]);
+  if (leadId) query = query.eq("lead_id", leadId);
 
+  const { data, count, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const total = count ?? 0;
   return {
-    data: data as unknown as IActivity[],
+    data: (data ?? []).map(rowToActivity),
     total,
     page: safePage,
     limit: safeLimit,

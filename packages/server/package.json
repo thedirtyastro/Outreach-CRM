@@ -12,17 +12,18 @@
     "./services/*": "./src/services/*.ts"
   },
   "dependencies": {
+    "@better-auth/infra": "^0.3.6",
     "@outreach/database": "*",
     "@outreach/shared": "*",
+    "@supabase/supabase-js": "^2.49.8",
     "better-auth": "^1.6.23",
-    "@better-auth/mongo-adapter": "*",
-    "mongodb": "*",
+    "pg": "^8.22.0",
     "resend": "^6.17.2",
-    "standardwebhooks": "*",
-    "mongoose": "^9.7.4"
+    "standardwebhooks": "*"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20"
+    "@types/node": "^20",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5"
   }
 }

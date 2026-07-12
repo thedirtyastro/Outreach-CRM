@@ -12,7 +12,7 @@ import type {
 } from "./enums";
 
 export interface IUser {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   image?: string;
@@ -22,7 +22,7 @@ export interface IUser {
 }
 
 export interface ILead {
-  _id: string;
+  id: string;
   userId: string;
   // Basic Info
   name: string;
@@ -68,7 +68,7 @@ export interface ILead {
 }
 
 export interface IActivity {
-  _id: string;
+  id: string;
   userId: string;
   leadId: string;
   type: ActivityType;
@@ -79,7 +79,7 @@ export interface IActivity {
 }
 
 export interface IEmail {
-  _id: string;
+  id: string;
   userId: string;
   leadId: string;
   messageId?: string;
@@ -99,7 +99,7 @@ export interface IEmail {
 }
 
 export interface IEmailEvent {
-  _id: string;
+  id: string;
   emailId: string;
   leadId: string;
   type: EmailEventType;
@@ -108,7 +108,7 @@ export interface IEmailEvent {
 }
 
 export interface IFollowUp {
-  _id: string;
+  id: string;
   userId: string;
   leadId: string;
   title: string;
@@ -124,7 +124,7 @@ export interface IFollowUp {
 }
 
 export interface IMeeting {
-  _id: string;
+  id: string;
   userId: string;
   leadId: string;
   title: string;
@@ -140,7 +140,7 @@ export interface IMeeting {
 }
 
 export interface INote {
-  _id: string;
+  id: string;
   userId: string;
   leadId: string;
   content: string;
@@ -151,7 +151,7 @@ export interface INote {
 }
 
 export interface IAttachment {
-  _id: string;
+  id: string;
   userId: string;
   leadId?: string;
   emailId?: string;
@@ -163,7 +163,7 @@ export interface IAttachment {
 }
 
 export interface ITemplate {
-  _id: string;
+  id: string;
   userId: string;
   name: string;
   subject: string;
@@ -176,7 +176,7 @@ export interface ITemplate {
 }
 
 export interface INotification {
-  _id: string;
+  id: string;
   userId: string;
   title: string;
   message: string;
@@ -188,7 +188,7 @@ export interface INotification {
 }
 
 export interface ITag {
-  _id: string;
+  id: string;
   userId: string;
   name: string;
   color: string;
@@ -196,7 +196,7 @@ export interface ITag {
 }
 
 export interface ISettings {
-  _id: string;
+  id: string;
   userId: string;
   theme: "dark" | "light" | "system";
   notifications: {

@@ -1,28 +1,24 @@
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
-import { connectDB, Lead, Activity } from "@outreach/database";
+import { supabase } from "@outreach/database/client";
 import { createLeadSchema } from "@outreach/shared";
 import { resolveUser } from "@outreach/server/api-key-auth";
-import type { ApiResponse, PaginatedResponse } from "@outreach/shared";
-import type { ILead } from "@outreach/shared";
+import type { ApiResponse, PaginatedResponse, ILead } from "@outreach/shared";
 
 export async function GET(request: NextRequest) {
   try {
     const headersList = await headers();
     const session = await resolveUser(headersList);
-    if (!session) {
-      return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
-    }
+    if (!session) return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
 
-    await connectDB();
     const userId = session.id;
     const { searchParams } = request.nextUrl;
 
     const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
-    const skip = (page - 1) * limit;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
-    // Filters
     const search = searchParams.get("search");
     const status = searchParams.getAll("status");
     const platform = searchParams.getAll("platform");
@@ -32,46 +28,46 @@ export async function GET(request: NextRequest) {
     const dateFrom = searchParams.get("dateFrom");
     const dateTo = searchParams.get("dateTo");
     const isArchived = searchParams.get("isArchived") === "true";
-    const sortField = searchParams.get("sortField") ?? "createdAt";
-    const sortDir = searchParams.get("sortDir") === "asc" ? 1 : -1;
+    const sortField = searchParams.get("sortField") ?? "created_at";
+    const sortDir = searchParams.get("sortDir") !== "asc";
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const query: Record<string, any> = { userId, isArchived };
+    const SORT_MAP: Record<string, string> = {
+      createdAt: "created_at", updatedAt: "updated_at",
+      name: "name", status: "status", priority: "priority", platform: "platform",
+    };
+    const dbSort = SORT_MAP[sortField] ?? "created_at";
 
-    if (search) {
-      query.$text = { $search: search };
-    }
-    if (status.length > 0) query.status = { $in: status };
-    if (platform.length > 0) query.platform = { $in: platform };
-    if (priority.length > 0) query.priority = { $in: priority };
-    if (response.length > 0) query.response = { $in: response };
-    if (tags.length > 0) query.tags = { $in: tags };
-    if (dateFrom || dateTo) {
-      query.createdAt = {};
-      if (dateFrom) query.createdAt.$gte = new Date(dateFrom);
-      if (dateTo) query.createdAt.$lte = new Date(dateTo);
-    }
+    let query = supabase
+      .from("leads")
+      .select("*", { count: "exact" })
+      .eq("user_id", userId)
+      .eq("is_archived", isArchived)
+      .order(dbSort, { ascending: !sortDir })
+      .range(from, to);
 
-    const [data, total] = await Promise.all([
-      Lead.find(query)
-        .sort({ [sortField]: sortDir })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      Lead.countDocuments(query),
-    ]);
+    if (search) query = query.or(`name.ilike.%${search}%,company.ilike.%${search}%,email.ilike.%${search}%`);
+    if (status.length) query = query.in("status", status);
+    if (platform.length) query = query.in("platform", platform);
+    if (priority.length) query = query.in("priority", priority);
+    if (response.length) query = query.in("response", response);
+    if (tags.length) query = query.overlaps("tags", tags);
+    if (dateFrom) query = query.gte("created_at", dateFrom);
+    if (dateTo) query = query.lte("created_at", dateTo);
+
+    const { data, count, error } = await query;
+    if (error) throw error;
 
     const result: PaginatedResponse<ILead> = {
-      data: data as unknown as ILead[],
-      total,
+      data: (data ?? []) as unknown as ILead[],
+      total: count ?? 0,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil((count ?? 0) / limit),
     };
 
     return Response.json({ success: true, data: result } satisfies ApiResponse<PaginatedResponse<ILead>>);
   } catch (error) {
-    console.error("[leads/route] GET error:", error);
+    console.error("[leads] GET error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });
   }
 }
@@ -80,62 +76,65 @@ export async function POST(request: NextRequest) {
   try {
     const headersList = await headers();
     const session = await resolveUser(headersList);
-    if (!session) {
-      return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
-    }
+    if (!session) return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
 
-    await connectDB();
     const userId = session.id;
     const body = await request.json();
-
     const parsed = createLeadSchema.safeParse(body);
     if (!parsed.success) {
-      return Response.json(
-        { success: false, error: parsed.error.issues[0]?.message ?? "Validation error" } satisfies ApiResponse,
-        { status: 400 }
-      );
+      return Response.json({ success: false, error: parsed.error.issues[0]?.message ?? "Validation error" } satisfies ApiResponse, { status: 400 });
     }
 
-    // Duplicate detection by email or linkedin
     const { email, linkedin } = parsed.data;
     if (email || linkedin) {
-      const orConditions = [];
-      if (email) orConditions.push({ email, userId });
-      if (linkedin) orConditions.push({ linkedin, userId });
-      const existing = orConditions.length > 0
-        ? await Lead.findOne({ $or: orConditions }).lean()
-        : null;
-
+      const orParts: string[] = [];
+      if (email) orParts.push(`email.eq.${email}`);
+      if (linkedin) orParts.push(`linkedin.eq.${linkedin}`);
+      const { data: existing } = await supabase.from("leads").select("*").eq("user_id", userId).or(orParts.join(",")).maybeSingle();
       if (existing) {
-        return Response.json(
-          {
-            success: false,
-            error: "duplicate",
-            data: existing,
-            message: "A lead with this email or LinkedIn already exists",
-          },
-          { status: 409 }
-        );
+        return Response.json({ success: false, error: "duplicate", data: existing, message: "A lead with this email or LinkedIn already exists" }, { status: 409 });
       }
     }
 
-    const lead = await Lead.create({ ...parsed.data, userId });
+    const { data: lead, error } = await supabase
+      .from("leads")
+      .insert({
+        user_id: userId,
+        name: parsed.data.name,
+        company: parsed.data.company ?? null,
+        designation: parsed.data.designation ?? null,
+        industry: parsed.data.industry ?? null,
+        email: parsed.data.email ?? null,
+        phone: parsed.data.phone ?? null,
+        whatsapp: parsed.data.whatsapp ?? null,
+        website: parsed.data.website ?? null,
+        linkedin: parsed.data.linkedin ?? null,
+        twitter: parsed.data.twitter ?? null,
+        instagram: parsed.data.instagram ?? null,
+        github: parsed.data.github ?? null,
+        portfolio: parsed.data.portfolio ?? null,
+        location: parsed.data.location ?? null,
+        bio: parsed.data.bio ?? null,
+        tags: parsed.data.tags ?? [],
+        priority: parsed.data.priority,
+        status: parsed.data.status,
+        platform: parsed.data.platform,
+        response: parsed.data.response,
+        budget: parsed.data.budget ?? null,
+        expected_revenue: parsed.data.expectedRevenue ?? null,
+        project_type: parsed.data.projectType ?? null,
+        next_follow_up: parsed.data.nextFollowUp ?? null,
+      })
+      .select()
+      .single();
 
-    // Log activity
-    await Activity.create({
-      userId,
-      leadId: lead._id,
-      type: "lead_created",
-      description: `Lead ${lead.name} was created`,
-      icon: "user-plus",
-    });
+    if (error) throw error;
 
-    return Response.json(
-      { success: true, data: lead.toJSON(), message: "Lead created" } satisfies ApiResponse<ILead>,
-      { status: 201 }
-    );
+    await supabase.from("activities").insert({ user_id: userId, lead_id: lead.id, type: "lead_created", description: `Lead ${lead.name} was created`, icon: "user-plus" });
+
+    return Response.json({ success: true, data: lead, message: "Lead created" } satisfies ApiResponse<ILead>, { status: 201 });
   } catch (error) {
-    console.error("[leads/route] POST error:", error);
+    console.error("[leads] POST error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });
   }
 }

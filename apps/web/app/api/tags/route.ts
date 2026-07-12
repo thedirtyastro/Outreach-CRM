@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@outreach/server/auth";
-import { connectDB } from "@outreach/database/connection";
-import { Tag } from "@outreach/database/schemas/tag.schema";
+import { supabase } from "@outreach/database/client";
 import { z } from "zod";
 
 const tagSchema = z.object({
@@ -14,9 +13,14 @@ export async function GET(request: NextRequest) {
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    await connectDB();
-    const tags = await Tag.find({ userId: session.user.id }).sort({ name: 1 }).lean();
-    return NextResponse.json(tags);
+    const { data, error } = await supabase
+      .from("tags")
+      .select("*")
+      .eq("user_id", session.user.id)
+      .order("name", { ascending: true });
+
+    if (error) throw error;
+    return NextResponse.json(data ?? []);
   } catch (error) {
     console.error("Error fetching tags:", error);
     return NextResponse.json({ error: "Failed to fetch tags" }, { status: 500 });
@@ -31,15 +35,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = tagSchema.parse(body);
 
-    await connectDB();
-
     // Check for duplicate
-    const existing = await Tag.findOne({ userId: session.user.id, name: validated.name });
+    const { data: existing } = await supabase
+      .from("tags")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .eq("name", validated.name)
+      .maybeSingle();
+
     if (existing) {
       return NextResponse.json({ error: "Tag already exists" }, { status: 409 });
     }
 
-    const tag = await Tag.create({ ...validated, userId: session.user.id });
+    const { data: tag, error } = await supabase
+      .from("tags")
+      .insert({ user_id: session.user.id, name: validated.name, color: validated.color })
+      .select()
+      .single();
+
+    if (error) throw error;
     return NextResponse.json(tag, { status: 201 });
   } catch (error) {
     console.error("Error creating tag:", error);

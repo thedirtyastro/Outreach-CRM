@@ -139,7 +139,7 @@ function AddFollowUpDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-2">
           <div className="space-y-1.5">
             <Label htmlFor="leadId">Lead ID</Label>
-            <Input id="leadId" placeholder="MongoDB lead ID" {...register("leadId")} />
+            <Input id="leadId" placeholder="Lead ID (UUID)" {...register("leadId")} />
             {errors.leadId && <p className="text-xs text-destructive">{errors.leadId.message}</p>}
           </div>
           <div className="space-y-1.5">

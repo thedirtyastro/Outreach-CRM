@@ -1,46 +1,32 @@
-import { Schema, model, models } from "mongoose";
+export type EmailStatus = "draft" | "sent" | "failed";
 
-const emailSchema = new Schema(
-  {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    leadId: { type: Schema.Types.ObjectId, ref: "Lead", required: true, index: true },
-    messageId: { type: String },
-    subject: { type: String, required: true },
-    body: { type: String, required: true },
-    html: { type: String },
-    from: { type: String, required: true },
-    to: { type: String, required: true },
-    status: {
-      type: String,
-      enum: ["draft", "sent", "failed"],
-      default: "draft",
-    },
-    threadId: { type: String },
-    attachments: [{ type: String }],
-    openedAt: { type: Date },
-    clickedAt: { type: Date },
-    repliedAt: { type: Date },
-  },
-  { timestamps: true }
-);
+export interface Email {
+  id: string;
+  user_id: string;
+  lead_id: string;
+  message_id?: string | null;
+  subject: string;
+  body: string;
+  html?: string | null;
+  from: string;
+  to: string;
+  status: EmailStatus;
+  thread_id?: string | null;
+  attachments: string[];
+  opened_at?: string | null;
+  clicked_at?: string | null;
+  replied_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
 
-emailSchema.index({ userId: 1, createdAt: -1 });
-emailSchema.index({ leadId: 1, createdAt: -1 });
+export type EmailEventType = "delivered" | "opened" | "clicked" | "bounced" | "complained" | "replied";
 
-export const Email = models.Email ?? model("Email", emailSchema);
-
-const emailEventSchema = new Schema(
-  {
-    emailId: { type: Schema.Types.ObjectId, ref: "Email", required: true, index: true },
-    leadId: { type: Schema.Types.ObjectId, ref: "Lead", required: true },
-    type: {
-      type: String,
-      required: true,
-      enum: ["delivered", "opened", "clicked", "bounced", "complained", "replied"],
-    },
-    data: { type: Schema.Types.Mixed },
-  },
-  { timestamps: true }
-);
-
-export const EmailEvent = models.EmailEvent ?? model("EmailEvent", emailEventSchema);
+export interface EmailEvent {
+  id: string;
+  email_id: string;
+  lead_id: string;
+  type: EmailEventType;
+  data?: Record<string, unknown> | null;
+  created_at: string;
+}

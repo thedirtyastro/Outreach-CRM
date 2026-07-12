@@ -1,12 +1,8 @@
 /**
  * server/services/analytics.service.ts
- *
- * Aggregation logic for the analytics endpoint.
  */
 
-import { connectDB, Activity } from "@outreach/database";
-import { Lead } from "@outreach/database/schemas/lead.schema";
-import { Email } from "@outreach/database/schemas/email.schema";
+import { supabase } from "@outreach/database/client";
 import { subDays, startOfMonth, eachDayOfInterval, format } from "date-fns";
 
 export type AnalyticsRange = "7d" | "30d" | "90d" | "this_month";
@@ -22,104 +18,132 @@ function getStartDate(range: AnalyticsRange): Date {
   }
 }
 
-/** Returns all analytics data for the analytics page. */
 export async function getAnalytics(userId: string, range: AnalyticsRange = "30d") {
-  await connectDB();
-
   const now = new Date();
   const startDate = getStartDate(range);
+  const startIso = startDate.toISOString();
+  const endIso = now.toISOString();
 
+  // Run all queries in parallel
   const [
-    totalLeads,
-    wonLeads,
-    lostLeads,
-    archivedLeads,
-    leadsInRange,
-    emailStats,
-    platformStats,
-    statusDistribution,
-    recentActivities,
-    dailyLeads,
+    totalLeadsRes,
+    wonLeadsRes,
+    lostLeadsRes,
+    archivedLeadsRes,
+    leadsInRangeRes,
+    emailStatsRes,
+    platformStatsRes,
+    statusDistRes,
+    recentActivitiesRes,
+    dailyLeadsRes,
   ] = await Promise.all([
-    Lead.countDocuments({ userId, isArchived: false }),
-    Lead.countDocuments({ userId, status: "won" }),
-    Lead.countDocuments({ userId, status: "lost" }),
-    Lead.countDocuments({ userId, isArchived: true }),
+    supabase.from("leads").select("*", { count: "exact", head: true }).eq("user_id", userId).eq("is_archived", false),
+    supabase.from("leads").select("*", { count: "exact", head: true }).eq("user_id", userId).eq("status", "won"),
+    supabase.from("leads").select("*", { count: "exact", head: true }).eq("user_id", userId).eq("status", "lost"),
+    supabase.from("leads").select("*", { count: "exact", head: true }).eq("user_id", userId).eq("is_archived", true),
 
-    Lead.find({
-      userId,
-      createdAt: { $gte: startDate, $lte: now },
-    }).select("status platform budget expectedRevenue createdAt").lean(),
+    supabase
+      .from("leads")
+      .select("status,platform,budget,expected_revenue,created_at")
+      .eq("user_id", userId)
+      .gte("created_at", startIso)
+      .lte("created_at", endIso),
 
-    Email.aggregate([
-      { $match: { userId: userId as unknown, createdAt: { $gte: startDate } } },
-      { $group: { _id: "$status", count: { $sum: 1 } } },
-    ]),
+    // Email status distribution
+    supabase
+      .from("emails")
+      .select("status")
+      .eq("user_id", userId)
+      .gte("created_at", startIso),
 
-    Lead.aggregate([
-      { $match: { userId: userId as unknown, isArchived: false } },
-      { $group: { _id: "$platform", count: { $sum: 1 } } },
-    ]),
+    // Platform distribution
+    supabase
+      .from("leads")
+      .select("platform")
+      .eq("user_id", userId)
+      .eq("is_archived", false),
 
-    Lead.aggregate([
-      { $match: { userId: userId as unknown, isArchived: false } },
-      { $group: { _id: "$status", count: { $sum: 1 } } },
-    ]),
+    // Status distribution
+    supabase
+      .from("leads")
+      .select("status")
+      .eq("user_id", userId)
+      .eq("is_archived", false),
 
-    Activity.find({ userId }).sort({ createdAt: -1 }).limit(10).lean(),
+    // Recent activities
+    supabase
+      .from("activities")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(10),
 
-    Lead.aggregate([
-      {
-        $match: {
-          userId: userId as unknown,
-          createdAt: { $gte: startDate, $lte: now },
-        },
-      },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-          count: { $sum: 1 },
-        },
-      },
-      { $sort: { _id: 1 } },
-    ]),
+    // Leads per day in range
+    supabase
+      .from("leads")
+      .select("created_at")
+      .eq("user_id", userId)
+      .gte("created_at", startIso)
+      .lte("created_at", endIso),
   ]);
 
+  const totalLeads = totalLeadsRes.count ?? 0;
+  const wonLeads = wonLeadsRes.count ?? 0;
+  const lostLeads = lostLeadsRes.count ?? 0;
+  const archivedLeads = archivedLeadsRes.count ?? 0;
+  const leadsInRange = leadsInRangeRes.data ?? [];
+
+  // Revenue calculations
   const totalRevenue = leadsInRange
     .filter((l) => l.status === "won")
-    .reduce((sum, l) => sum + (l.budget || 0), 0);
+    .reduce((sum, l) => sum + (l.budget ?? 0), 0);
 
   const expectedRevenue = leadsInRange
     .filter((l) => !["lost", "ghosted", "rejected", "archived"].includes(l.status))
-    .reduce((sum, l) => sum + (l.expectedRevenue || 0), 0);
+    .reduce((sum, l) => sum + (l.expected_revenue ?? 0), 0);
 
   const wonInRange = leadsInRange.filter((l) => l.status === "won").length;
   const conversionRate = leadsInRange.length
     ? Math.round((wonInRange / leadsInRange.length) * 100)
     : 0;
 
-  // Daily chart data — fill in missing dates with 0
+  // Build daily chart data
   const allDays = eachDayOfInterval({ start: startDate, end: now });
-  const dailyMap = new Map(dailyLeads.map((d) => [d._id, d.count]));
+  const dailyMap = new Map<string, number>();
+  for (const row of dailyLeadsRes.data ?? []) {
+    const day = format(new Date(row.created_at), "yyyy-MM-dd");
+    dailyMap.set(day, (dailyMap.get(day) ?? 0) + 1);
+  }
   const dailyChartData = allDays.map((day) => ({
     date: format(day, "MMM dd"),
-    leads: dailyMap.get(format(day, "yyyy-MM-dd")) || 0,
+    leads: dailyMap.get(format(day, "yyyy-MM-dd")) ?? 0,
   }));
 
-  const platformData = platformStats.map((p) => ({
-    platform: (p._id as string) || "other",
-    count: p.count as number,
-  }));
+  // Platform distribution
+  const platformMap = new Map<string, number>();
+  for (const row of platformStatsRes.data ?? []) {
+    const p = row.platform || "other";
+    platformMap.set(p, (platformMap.get(p) ?? 0) + 1);
+  }
+  const platformData = Array.from(platformMap.entries()).map(([platform, count]) => ({ platform, count }));
+
+  // Status distribution
+  const statusMap = new Map<string, number>();
+  for (const row of statusDistRes.data ?? []) {
+    statusMap.set(row.status, (statusMap.get(row.status) ?? 0) + 1);
+  }
 
   const statusOrder = [
     "new", "initiated", "message_sent", "viewed", "responded",
     "interested", "meeting_scheduled", "proposal_sent", "negotiation", "won",
   ];
-  const statusMap = new Map(statusDistribution.map((s) => [s._id, s.count]));
-  const funnelData = statusOrder.map((s) => ({
-    status: s,
-    count: (statusMap.get(s) as number) || 0,
-  }));
+  const funnelData = statusOrder.map((s) => ({ status: s, count: statusMap.get(s) ?? 0 }));
+
+  // Email stats
+  const emailStatusMap = new Map<string, number>();
+  for (const row of emailStatsRes.data ?? []) {
+    emailStatusMap.set(row.status, (emailStatusMap.get(row.status) ?? 0) + 1);
+  }
 
   return {
     summary: {
@@ -136,11 +160,8 @@ export async function getAnalytics(userId: string, range: AnalyticsRange = "30d"
       dailyLeads: dailyChartData,
       platformDistribution: platformData,
       statusFunnel: funnelData,
-      statusDistribution: statusDistribution.map((s) => ({
-        status: s._id as string,
-        count: s.count as number,
-      })),
+      statusDistribution: Array.from(statusMap.entries()).map(([status, count]) => ({ status, count })),
     },
-    recentActivities,
+    recentActivities: recentActivitiesRes.data ?? [],
   };
 }

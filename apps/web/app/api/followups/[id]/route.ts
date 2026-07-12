@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@outreach/server/auth";
-import { connectDB, FollowUp, Activity } from "@outreach/database";
+import { supabase } from "@outreach/database/client";
 import type { ApiResponse } from "@outreach/shared";
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -10,39 +10,33 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const headersList = await headers();
     const session = await auth.api.getSession({ headers: headersList });
-    if (!session?.user) {
-      return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
-    }
+    if (!session?.user) return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
 
-    await connectDB();
     const { id } = await params;
     const userId = session.user.id;
     const body = await request.json();
 
-    const followUp = await FollowUp.findOne({ _id: id, userId });
-    if (!followUp) {
-      return Response.json({ success: false, error: "Follow-up not found" } satisfies ApiResponse, { status: 404 });
+    const updates: Record<string, unknown> = {};
+    if (body.title !== undefined) updates.title = body.title;
+    if (body.description !== undefined) updates.description = body.description;
+    if (body.dueDate !== undefined) updates.due_date = body.dueDate;
+    if (body.status !== undefined) {
+      updates.status = body.status;
+      if (body.status === "completed") updates.completed_at = new Date().toISOString();
+    }
+    if (body.isRecurring !== undefined) updates.is_recurring = body.isRecurring;
+    if (body.recurringInterval !== undefined) updates.recurring_interval = body.recurringInterval;
+    if (body.recurringUnit !== undefined) updates.recurring_unit = body.recurringUnit;
+
+    const { data, error } = await supabase.from("follow_ups").update(updates).eq("id", id).eq("user_id", userId).select().single();
+    if (error) throw error;
+    if (!data) return Response.json({ success: false, error: "Follow-up not found" } satisfies ApiResponse, { status: 404 });
+
+    if (body.status === "completed") {
+      await supabase.from("activities").insert({ user_id: userId, lead_id: data.lead_id, type: "follow_up_completed", description: `Follow-up completed: ${data.title}`, icon: "check-circle" });
     }
 
-    const { status } = body;
-    if (status) {
-      followUp.status = status;
-      if (status === "completed") {
-        followUp.completedAt = new Date();
-        await Activity.create({
-          userId,
-          leadId: followUp.leadId,
-          type: "follow_up_completed",
-          description: `Follow-up completed: ${followUp.title}`,
-          icon: "check-circle",
-        });
-      }
-    }
-
-    Object.assign(followUp, body);
-    await followUp.save();
-
-    return Response.json({ success: true, data: followUp.toJSON() } satisfies ApiResponse);
+    return Response.json({ success: true, data } satisfies ApiResponse);
   } catch (error) {
     console.error("[followups/[id]] PATCH error:", error);
     return Response.json({ success: false, error: "Internal server error" } satisfies ApiResponse, { status: 500 });
@@ -53,17 +47,12 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
   try {
     const headersList = await headers();
     const session = await auth.api.getSession({ headers: headersList });
-    if (!session?.user) {
-      return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
-    }
+    if (!session?.user) return Response.json({ success: false, error: "Unauthorized" } satisfies ApiResponse, { status: 401 });
 
-    await connectDB();
     const { id } = await params;
-    const followUp = await FollowUp.findOneAndDelete({ _id: id, userId: session.user.id });
-
-    if (!followUp) {
-      return Response.json({ success: false, error: "Follow-up not found" } satisfies ApiResponse, { status: 404 });
-    }
+    const { error, count } = await supabase.from("follow_ups").delete({ count: "exact" }).eq("id", id).eq("user_id", session.user.id);
+    if (error) throw error;
+    if (!count) return Response.json({ success: false, error: "Follow-up not found" } satisfies ApiResponse, { status: 404 });
 
     return Response.json({ success: true, message: "Follow-up deleted" } satisfies ApiResponse);
   } catch (error) {

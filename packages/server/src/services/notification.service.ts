@@ -1,56 +1,72 @@
 /**
  * server/services/notification.service.ts
- *
- * Database operations for the Notification entity.
  */
 
-import { connectDB } from "@outreach/database";
-import { Notification } from "@outreach/database/schemas/notification.schema";
+import { supabase } from "@outreach/database/client";
 import type { INotification } from "@outreach/shared";
 
-/** Fetch recent notifications and the unread count for a user. */
+function rowToNotification(row: Record<string, unknown>): INotification {
+  return {
+    id: row.id as string,
+    userId: row.user_id as string,
+    title: row.title as string,
+    message: row.message as string,
+    type: row.type as INotification["type"],
+    isRead: row.is_read as boolean,
+    leadId: row.lead_id as string | undefined,
+    link: row.link as string | undefined,
+    createdAt: row.created_at as string,
+  };
+}
+
 export async function getNotifications(
   userId: string,
   unreadOnly = false
 ): Promise<{ notifications: INotification[]; unreadCount: number }> {
-  await connectDB();
+  let query = supabase
+    .from("notifications")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(50);
 
-  const filter: Record<string, unknown> = { userId };
-  if (unreadOnly) filter.isRead = false;
+  if (unreadOnly) query = query.eq("is_read", false);
 
-  const [notifications, unreadCount] = await Promise.all([
-    Notification.find(filter).sort({ createdAt: -1 }).limit(50).lean(),
-    Notification.countDocuments({ userId, isRead: false }),
-  ]);
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const { count } = await supabase
+    .from("notifications")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("is_read", false);
 
   return {
-    notifications: notifications as unknown as INotification[],
-    unreadCount,
+    notifications: (data ?? []).map(rowToNotification),
+    unreadCount: count ?? 0,
   };
 }
 
-/** Mark specific notification ids as read. */
-export async function markNotificationsRead(
-  userId: string,
-  ids: string[]
-): Promise<void> {
-  await connectDB();
-  await Notification.updateMany(
-    { _id: { $in: ids }, userId },
-    { $set: { isRead: true } }
-  );
+export async function markNotificationsRead(userId: string, ids: string[]): Promise<void> {
+  const { error } = await supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .in("id", ids)
+    .eq("user_id", userId);
+
+  if (error) throw new Error(error.message);
 }
 
-/** Mark all notifications as read for a user. */
 export async function markAllNotificationsRead(userId: string): Promise<void> {
-  await connectDB();
-  await Notification.updateMany(
-    { userId, isRead: false },
-    { $set: { isRead: true } }
-  );
+  const { error } = await supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .eq("user_id", userId)
+    .eq("is_read", false);
+
+  if (error) throw new Error(error.message);
 }
 
-/** Create a notification (internal use — e.g. from cron or webhook handlers). */
 export async function createNotification(
   userId: string,
   data: {
@@ -61,7 +77,19 @@ export async function createNotification(
     link?: string;
   }
 ): Promise<INotification> {
-  await connectDB();
-  const notification = await Notification.create({ userId, ...data });
-  return notification.toObject() as unknown as INotification;
+  const { data: notification, error } = await supabase
+    .from("notifications")
+    .insert({
+      user_id: userId,
+      title: data.title,
+      message: data.message,
+      type: data.type ?? "info",
+      lead_id: data.leadId ?? null,
+      link: data.link ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+  return rowToNotification(notification);
 }
