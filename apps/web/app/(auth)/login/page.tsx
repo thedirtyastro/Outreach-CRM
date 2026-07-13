@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Mail, Lock, Zap } from "lucide-react";
+import { Loader2, Mail, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 import { signIn } from "@/lib/auth-client";
@@ -67,11 +67,8 @@ function LoginForm() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="space-y-8"
     >
-      {/* Logo */}
+      {/* Heading */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 mb-4">
-          <Zap className="w-6 h-6 text-primary" />
-        </div>
         <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
         <p className="text-sm text-muted-foreground">
           Sign in to your OutReach CRM account

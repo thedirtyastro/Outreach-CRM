@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import AppLogo from "@/public/OR-LOGO.svg";
+import AppLogo from "@/public/Logo.svg";
 
 interface LogoProps {
   size?: "sm" | "md" | "lg";

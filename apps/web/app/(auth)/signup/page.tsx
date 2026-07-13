@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Loader2, Mail, Lock, User, Zap } from "lucide-react";
+import { Loader2, Mail, Lock, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { signUp } from "@/lib/auth-client";
@@ -58,11 +58,8 @@ export default function SignupPage() {
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="space-y-8"
     >
-      {/* Logo */}
+      {/* Heading */}
       <div className="text-center space-y-2">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 mb-4">
-          <Zap className="w-6 h-6 text-primary" />
-        </div>
         <h1 className="text-2xl font-semibold tracking-tight">
           Create your account
         </h1>
