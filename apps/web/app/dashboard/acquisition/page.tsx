@@ -3,18 +3,21 @@
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import type { AcquisitionDashboard } from "@outreach/shared";
-import { ProgressCards } from "@/components/acquisition/progress-cards";
-import { GoalModal } from "@/components/acquisition/goal-modal";
-import { OutreachEntryForm } from "@/components/acquisition/outreach-entry-form";
-import { FunnelChart } from "@/components/acquisition/funnel-chart";
-import { HeatmapCalendar } from "@/components/acquisition/heatmap-calendar";
-import { GoalProgressRings } from "@/components/acquisition/goal-progress-rings";
-import { SmartInsights } from "@/components/acquisition/smart-insights";
-import { StreakSystem } from "@/components/acquisition/streak-system";
-import { ForecastPanel } from "@/components/acquisition/forecast-panel";
-import { ActivityTimeline } from "@/components/acquisition/activity-timeline";
+import {
+  ProgressCards,
+  GoalModal,
+  OutreachEntryForm,
+  FunnelChart,
+  HeatmapCalendar,
+  GoalProgressRings,
+  SmartInsights,
+  StreakSystem,
+  ForecastPanel,
+  ActivityTimeline,
+} from "@/components/acquisition";
 import { Button } from "@/components/ui/button";
-import { Target, Plus, RefreshCw } from "lucide-react";
+import { Target, Plus, RefreshCw, Menu } from "lucide-react";
+import { useSidebarStore } from "@/store/sidebar.store";
 import AcquisitionLoading from "./loading";
 
 export default function AcquisitionPage() {
@@ -22,6 +25,7 @@ export default function AcquisitionPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [goalModalOpen, setGoalModalOpen] = useState(false);
   const [entryFormOpen, setEntryFormOpen] = useState(false);
+  const { open: openSidebar } = useSidebarStore();
 
   const fetchDashboard = useCallback(async () => {
     setIsLoading(true);
@@ -47,24 +51,30 @@ export default function AcquisitionPage() {
   // No goal configured state
   if (!dashboard || dashboard.todaysProgress.dailyTarget === 0) {
     return (
-      <div className="space-y-6 max-w-[1400px]">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Client Acquisition</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={fetchDashboard}>
-              <RefreshCw className="w-4 h-4 mr-1" /> Refresh
-            </Button>
+      <div className="space-y-4 sm:space-y-6 max-w-[1400px] mx-auto px-2 sm:px-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openSidebar}
+              className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-accent transition-colors"
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5 text-foreground" />
+            </button>
+            <h1 className="text-xl sm:text-2xl font-semibold">Client Acquisition</h1>
           </div>
+          <Button variant="outline" size="sm" onClick={fetchDashboard}>
+            <RefreshCw className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
         </div>
 
-        {dashboard && (
-          <ProgressCards progress={dashboard.todaysProgress} />
-        )}
+        {dashboard && <ProgressCards progress={dashboard.todaysProgress} />}
 
-        <div className="flex flex-col items-center justify-center py-12 bg-card border border-border rounded-xl">
-          <Target className="w-12 h-12 text-muted-foreground mb-4" />
-          <h2 className="text-lg font-medium mb-2">Set Your Daily Goal</h2>
-          <p className="text-sm text-muted-foreground mb-4 text-center max-w-md">
+        <div className="flex flex-col items-center justify-center py-8 sm:py-12 px-4 bg-card border border-border rounded-xl">
+          <Target className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mb-4" />
+          <h2 className="text-base sm:text-lg font-medium mb-2 text-center">Set Your Daily Goal</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-4 text-center max-w-md">
             Configure your daily outreach targets to start tracking progress.
             We suggest starting with 10 contacts per day.
           </p>
@@ -83,19 +93,31 @@ export default function AcquisitionPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-[1400px]">
+    <div className="space-y-4 sm:space-y-6 max-w-[1400px] mx-auto px-2 sm:px-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Client Acquisition</h1>
-        <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openSidebar}
+            className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-accent transition-colors"
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5 text-foreground" />
+          </button>
+          <h1 className="text-xl sm:text-2xl font-semibold">Client Acquisition</h1>
+        </div>
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" size="sm" onClick={fetchDashboard}>
-            <RefreshCw className="w-4 h-4 mr-1" /> Refresh
+            <RefreshCw className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
           <Button variant="outline" size="sm" onClick={() => setGoalModalOpen(true)}>
-            <Target className="w-4 h-4 mr-1" /> Edit Goal
+            <Target className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">Edit Goal</span>
           </Button>
           <Button size="sm" onClick={() => setEntryFormOpen(true)}>
-            <Plus className="w-4 h-4 mr-1" /> Log Outreach
+            <Plus className="w-4 h-4 sm:mr-1" />
+            <span className="hidden sm:inline">Log Outreach</span>
           </Button>
         </div>
       </div>
@@ -104,16 +126,16 @@ export default function AcquisitionPage() {
       <ProgressCards progress={dashboard.todaysProgress} />
 
       {/* Platform Progress + Streak */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="md:col-span-1 lg:col-span-2">
           <GoalProgressRings platforms={dashboard.platformProgress} />
         </div>
         <StreakSystem streak={dashboard.streak} />
       </div>
 
       {/* Funnel + Forecast */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="md:col-span-1 lg:col-span-2">
           <FunnelChart stages={dashboard.funnel} />
         </div>
         <ForecastPanel forecast={dashboard.forecast} />
@@ -126,7 +148,7 @@ export default function AcquisitionPage() {
       />
 
       {/* Insights + Timeline */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <SmartInsights insights={dashboard.insights} />
         <ActivityTimeline logs={dashboard.recentLogs} />
       </div>

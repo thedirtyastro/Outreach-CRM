@@ -235,7 +235,7 @@ export default function FollowUpsPage() {
         }
       />
 
-      <div className="flex-1 p-6 max-w-3xl space-y-5">
+      <div className="flex-1 p-4 sm:p-6 max-w-3xl space-y-5">
         {/* Tabs */}
         <div className="flex gap-1 border-b border-border pb-0">
           {tabs.map((tab) => (

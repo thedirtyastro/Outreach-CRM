@@ -17,13 +17,13 @@ export function FunnelChart({ stages }: FunnelChartProps) {
         {stages.map((stage, i) => {
           const widthPercent = maxCount > 0 ? Math.max(8, (stage.count / maxCount) * 100) : 8;
           return (
-            <div key={stage.name} className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground w-24 shrink-0 truncate">
+            <div key={stage.name} className="flex items-center gap-2 sm:gap-3">
+              <span className="text-[10px] sm:text-xs text-muted-foreground w-16 sm:w-24 shrink-0 truncate">
                 {stage.name}
               </span>
               <div className="flex-1 relative">
                 <motion.div
-                  className="h-7 rounded-md bg-gradient-to-r from-blue-500/80 to-blue-400/60 flex items-center px-2"
+                  className="h-7 rounded-md bg-linear-to-r from-blue-500/80 to-blue-400/60 flex items-center px-2"
                   initial={{ width: 0 }}
                   animate={{ width: `${widthPercent}%` }}
                   transition={{ duration: 0.6, delay: i * 0.1 }}
@@ -33,7 +33,7 @@ export function FunnelChart({ stages }: FunnelChartProps) {
                   </span>
                 </motion.div>
               </div>
-              <span className="text-xs tabular-nums text-muted-foreground w-14 text-right">
+              <span className="text-[10px] sm:text-xs tabular-nums text-muted-foreground w-10 sm:w-14 text-right">
                 {i === 0 ? "—" : `${stage.conversionRate}%`}
               </span>
             </div>
@@ -43,3 +43,4 @@ export function FunnelChart({ stages }: FunnelChartProps) {
     </div>
   );
 }
+

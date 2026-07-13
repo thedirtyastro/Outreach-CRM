@@ -18,7 +18,7 @@ export function GoalProgressRings({ platforms }: GoalProgressRingsProps) {
   return (
     <div className="bg-card border border-border rounded-xl p-5">
       <h3 className="text-sm font-semibold mb-4">Platform Progress</h3>
-      <div className="flex flex-wrap gap-6">
+      <div className="flex flex-wrap justify-center sm:justify-start gap-4 sm:gap-6">
         {platforms.map((p) => (
           <ProgressRing key={p.platform} {...p} />
         ))}
@@ -35,8 +35,8 @@ function ProgressRing({ platform, current, target, percent, color }: PlatformPro
 
   return (
     <div className="flex flex-col items-center gap-1.5">
-      <div className="relative w-20 h-20">
-        <svg className="w-20 h-20 -rotate-90" viewBox="0 0 80 80">
+      <div className="relative w-16 h-16 sm:w-20 sm:h-20">
+        <svg className="w-16 h-16 sm:w-20 sm:h-20 -rotate-90" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r={radius} fill="none" stroke="currentColor" strokeWidth="5" className="text-muted/30" />
           <circle
             cx="40" cy="40" r={radius} fill="none"
@@ -55,3 +55,4 @@ function ProgressRing({ platform, current, target, percent, color }: PlatformPro
     </div>
   );
 }
+

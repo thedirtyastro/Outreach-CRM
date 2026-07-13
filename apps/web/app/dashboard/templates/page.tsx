@@ -238,7 +238,7 @@ export default function TemplatesPage() {
           </Button>
         }
       />
-      <div className="flex-1 p-6 space-y-5 max-w-[1200px]">
+      <div className="flex-1 p-4 sm:p-6 space-y-5 max-w-[1200px]">
         {/* Type filter */}
         <div className="flex gap-1.5 flex-wrap">
           {types.map((type) => (

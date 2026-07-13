@@ -120,7 +120,7 @@ export function DashboardContent({ stats: s }: DashboardContentProps) {
   ];
 
   return (
-    <div className="space-y-6 max-w-[1400px]">
+    <div className="space-y-4 sm:space-y-6 max-w-[1400px]">
       {/* Stat grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
         {statCards.map((card, i) => (

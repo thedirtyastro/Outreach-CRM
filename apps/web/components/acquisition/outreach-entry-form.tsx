@@ -62,8 +62,8 @@ export function OutreachEntryForm({ onSave, onClose }: OutreachEntryFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-card border border-border rounded-xl p-6 w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
+      <div className="bg-card border border-border rounded-t-xl sm:rounded-xl p-4 sm:p-6 w-full sm:max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Log Outreach</h2>
           <div className="flex items-center gap-2">
@@ -188,3 +188,4 @@ export function OutreachEntryForm({ onSave, onClose }: OutreachEntryFormProps) {
     </div>
   );
 }
+

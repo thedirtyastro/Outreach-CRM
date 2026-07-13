@@ -49,3 +49,4 @@ export function ActivityTimeline({ logs }: ActivityTimelineProps) {
     </div>
   );
 }
+

@@ -2,6 +2,7 @@ import type { TableName } from "./database.types";
 
 /** Supabase table names — use with supabase.from(TABLES.leads). */
 export const TABLES = {
+  acquisition_goals: "acquisition_goals",
   activities: "activities",
   attachments: "attachments",
   emails: "emails",
@@ -11,6 +12,8 @@ export const TABLES = {
   meetings: "meetings",
   notes: "notes",
   notifications: "notifications",
+  outreach_logs: "outreach_logs",
+  productivity_streaks: "productivity_streaks",
   settings: "settings",
   tags: "tags",
   templates: "templates",

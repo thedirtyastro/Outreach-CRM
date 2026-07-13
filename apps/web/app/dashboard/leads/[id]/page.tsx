@@ -158,7 +158,7 @@ export default function LeadDetailPage({
     return (
       <>
         <Header title="Lead" />
-        <div className="flex-1 p-6 max-w-[1200px] animate-pulse">
+        <div className="flex-1 p-4 sm:p-6 max-w-[1200px] animate-pulse">
           <div className="h-7 bg-muted/40 rounded w-40 mb-6" />
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
             <div className="space-y-4">
@@ -207,7 +207,7 @@ export default function LeadDetailPage({
         }
       />
 
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 sm:p-6">
         {/* Back */}
         <div className="mb-5">
           <Button

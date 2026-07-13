@@ -232,8 +232,8 @@ export function LeadsTable() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-xl border border-border overflow-hidden">
-        <table className="w-full">
+      <div className="rounded-xl border border-border overflow-x-auto">
+        <table className="w-full min-w-[700px]">
           <thead>
             {table.getHeaderGroups().map((hg) => (
               <tr key={hg.id} className="border-b border-border bg-muted/20">

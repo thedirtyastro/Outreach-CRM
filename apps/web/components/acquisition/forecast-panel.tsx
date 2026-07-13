@@ -15,7 +15,7 @@ const CONFIDENCE_COLORS = {
 
 export function ForecastPanel({ forecast }: ForecastPanelProps) {
   return (
-    <div className="bg-card border border-border rounded-xl p-5">
+    <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-blue-400" />
@@ -45,3 +45,4 @@ function ForecastRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+

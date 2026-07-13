@@ -110,7 +110,7 @@ export default function PipelinePage() {
         }
       />
 
-      <div className="flex-1 p-6 space-y-5">
+      <div className="flex-1 p-4 sm:p-6 space-y-5">
         {/* Stats bar */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}

@@ -22,6 +22,7 @@ import type {
   Insight,
   PaginatedResponse,
   GoalSchedule,
+  OutreachPlatform,
 } from "@outreach/shared";
 import type { GoalFormInput, OutreachLogInput } from "@outreach/shared";
 
@@ -245,7 +246,7 @@ export async function listOutreachLogs(
 
   if (from) query = query.gte("created_at", `${from}T00:00:00.000Z`);
   if (to) query = query.lte("created_at", `${to}T23:59:59.999Z`);
-  if (platform) query = query.eq("platform", platform);
+  if (platform) query = query.eq("platform", platform as OutreachPlatform);
 
   const { data, count, error } = await query;
   if (error) throw new Error(error.message);

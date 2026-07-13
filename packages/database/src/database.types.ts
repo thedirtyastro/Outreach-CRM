@@ -3,6 +3,7 @@
  * Row types mirror packages/database/migrations/001_initial_schema.sql
  */
 
+import type { AcquisitionGoal } from "./schemas/acquisition-goal.schema";
 import type { Activity } from "./schemas/activity.schema";
 import type { Attachment } from "./schemas/attachment.schema";
 import type { Email, EmailEvent } from "./schemas/email.schema";
@@ -11,6 +12,8 @@ import type { Lead } from "./schemas/lead.schema";
 import type { Meeting } from "./schemas/meeting.schema";
 import type { Note } from "./schemas/note.schema";
 import type { Notification } from "./schemas/notification.schema";
+import type { OutreachLog } from "./schemas/outreach-log.schema";
+import type { ProductivityStreak } from "./schemas/productivity-streak.schema";
 import type { Settings } from "./schemas/settings.schema";
 import type { Tag } from "./schemas/tag.schema";
 import type { Template } from "./schemas/template.schema";
@@ -70,6 +73,12 @@ type UpdateRow<T> =
 export interface Database {
   public: {
     Tables: {
+      acquisition_goals: {
+        Row: ToRecord<AcquisitionGoal>;
+        Insert: InsertRow<AcquisitionGoal, "target_contacts" | "linkedin_target" | "twitter_target" | "github_target" | "instagram_target" | "email_target" | "calls_target" | "meetings_target" | "revenue_target" | "working_hours" | "schedule">;
+        Update: UpdateRow<AcquisitionGoal>;
+        Relationships: [];
+      };
       activities: {
         Row: ToRecord<Activity>;
         Insert: InsertRow<Activity>;
@@ -191,6 +200,25 @@ export interface Database {
             referencedColumns: ["id"];
           },
         ];
+      };
+      outreach_logs: {
+        Row: ToRecord<OutreachLog>;
+        Insert: InsertRow<OutreachLog, "status" | "replied" | "meeting_booked" | "proposal_sent" | "client_won">;
+        Update: UpdateRow<OutreachLog>;
+        Relationships: [
+          {
+            foreignKeyName: "outreach_logs_lead_id_fkey";
+            columns: ["lead_id"];
+            referencedRelation: "leads";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      productivity_streaks: {
+        Row: ToRecord<ProductivityStreak>;
+        Insert: InsertRow<ProductivityStreak, "current_streak" | "longest_streak" | "completed_days">;
+        Update: UpdateRow<ProductivityStreak>;
+        Relationships: [];
       };
       settings: {
         Row: ToRecord<Settings>;

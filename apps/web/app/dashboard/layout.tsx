@@ -8,7 +8,7 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen overflow-hidden">
       <Sidebar />
-      <main className="flex-1 ml-60 flex flex-col min-h-screen overflow-auto">
+      <main className="flex-1 md:ml-60 flex flex-col min-h-screen overflow-auto">
         {children}
       </main>
     </div>

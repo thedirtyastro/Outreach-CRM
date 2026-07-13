@@ -13,7 +13,7 @@ export default async function AdminPage() {
         title="Admin Overview"
         description={`Welcome back, ${session?.user?.name?.split(" ")[0] ?? "Admin"}`}
       />
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 sm:p-6">
         <AdminOverview />
       </div>
     </>

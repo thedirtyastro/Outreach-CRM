@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LogOut, User, ChevronDown } from "lucide-react";
+import { LogOut, User, ChevronDown, Menu } from "lucide-react";
 import { toast } from "sonner";
 import { signOut, useSession } from "@/lib/auth-client";
 import { getInitials } from "@/lib/utils";
@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { useSidebarStore } from "@/store/sidebar.store";
 
 interface HeaderProps {
   title: string;
@@ -26,6 +27,7 @@ interface HeaderProps {
 export function Header({ title, description, actions }: HeaderProps) {
   const router = useRouter();
   const { data: session } = useSession();
+  const { open } = useSidebarStore();
   const user = session?.user;
 
   async function handleSignOut() {
@@ -36,7 +38,16 @@ export function Header({ title, description, actions }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-4 h-14 px-6 bg-background/80 backdrop-blur-md border-b border-border">
+    <header className="sticky top-0 z-30 flex items-center gap-4 h-14 px-4 sm:px-6 bg-background/80 backdrop-blur-md border-b border-border">
+      {/* Mobile menu button */}
+      <button
+        onClick={open}
+        className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-accent transition-colors"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5 text-foreground" />
+      </button>
+
       {/* Title */}
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">

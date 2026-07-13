@@ -31,7 +31,7 @@ export function StreakSystem({ streak }: StreakSystemProps) {
       </div>
 
       {/* Badges */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {streak.badges.map((badge) => (
           <div
             key={badge.id}
@@ -50,3 +50,4 @@ export function StreakSystem({ streak }: StreakSystemProps) {
     </div>
   );
 }
+

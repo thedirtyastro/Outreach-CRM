@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
   ArrowRight,
@@ -220,6 +220,7 @@ const FAQ = [
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -248,7 +249,7 @@ export default function LandingPage() {
 
       {/* Navigation */}
       <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? "bg-[#0A0F1E]/80 backdrop-blur-2xl border-b border-[#2563EB]/10 shadow-lg shadow-[#2563EB]/5" : "bg-transparent"}`}>
-        <div className="max-w-[1280px] mx-auto px-8 h-[72px] flex items-center justify-between">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-8 h-[72px] flex items-center justify-between">
           <Logo size="md" />
           <div className="hidden md:flex items-center gap-10">
             <a href="#features" className="text-[15px] text-white/60 hover:text-white transition-colors duration-200">Features</a>
@@ -256,18 +257,53 @@ export default function LandingPage() {
             <a href="#testimonials" className="text-[15px] text-white/60 hover:text-white transition-colors duration-200">Testimonials</a>
             <a href="#faq" className="text-[15px] text-white/60 hover:text-white transition-colors duration-200">FAQ</a>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="text-[15px] font-medium text-white/70 hover:text-white transition-colors duration-200">Sign In</Link>
-            <Link href="/signup" className="group relative inline-flex items-center gap-2 h-10 px-5 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] text-white text-[15px] font-medium hover:from-[#3B82F6] hover:to-[#2563EB] transition-all duration-200 shadow-lg shadow-[#2563EB]/25 hover:shadow-[#2563EB]/40 hover:scale-[1.02] overflow-hidden">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Link href="/login" className="text-[15px] font-medium text-white/70 hover:text-white transition-colors duration-200 hidden sm:block">Sign In</Link>
+            <Link href="/signup" className="group relative inline-flex items-center gap-2 h-9 sm:h-10 px-4 sm:px-5 rounded-2xl bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] text-white text-[14px] sm:text-[15px] font-medium hover:from-[#3B82F6] hover:to-[#2563EB] transition-all duration-200 shadow-lg shadow-[#2563EB]/25 hover:shadow-[#2563EB]/40 hover:scale-[1.02] overflow-hidden">
               <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
               Get Started
             </Link>
+            {/* Mobile menu toggle */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {mobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
           </div>
         </div>
+
+        {/* Mobile menu dropdown */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="md:hidden bg-[#0A0F1E]/95 backdrop-blur-2xl border-b border-[#2563EB]/10 overflow-hidden"
+            >
+              <div className="px-4 py-4 space-y-3">
+                <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-[15px] text-white/60 hover:text-white py-2 transition-colors">Features</a>
+                <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-[15px] text-white/60 hover:text-white py-2 transition-colors">Pricing</a>
+                <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className="block text-[15px] text-white/60 hover:text-white py-2 transition-colors">Testimonials</a>
+                <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="block text-[15px] text-white/60 hover:text-white py-2 transition-colors">FAQ</a>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block text-[15px] text-white/70 hover:text-white py-2 transition-colors sm:hidden">Sign In</Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-[160px] pb-[160px] px-8">
+      <section className="relative pt-[120px] sm:pt-[140px] lg:pt-[160px] pb-[80px] sm:pb-[120px] lg:pb-[160px] px-4 sm:px-8">
         <AIParticles />
         <DataStream className="top-[10%] left-[12%] hidden lg:block" />
         <DataStream className="top-[30%] right-[15%] hidden lg:block" />
@@ -296,7 +332,7 @@ export default function LandingPage() {
               </span>
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="text-[56px] sm:text-[64px] lg:text-[72px] font-bold tracking-[-0.03em] leading-[1.05] mb-8">
+            <motion.h1 variants={fadeUp} className="text-[36px] sm:text-[48px] md:text-[56px] lg:text-[72px] font-bold tracking-[-0.03em] leading-[1.05] mb-6 sm:mb-8">
               <span className="relative">
                 AI-Powered CRM
                 <motion.span
@@ -310,7 +346,7 @@ export default function LandingPage() {
               Sales Teams
             </motion.h1>
 
-            <motion.p variants={fadeUp} className="text-[18px] sm:text-[20px] text-white/55 max-w-[520px] leading-relaxed mb-10">
+            <motion.p variants={fadeUp} className="text-[16px] sm:text-[18px] md:text-[20px] text-white/55 max-w-[520px] leading-relaxed mb-8 sm:mb-10">
               Capture leads from any platform, automate your outreach with AI intelligence, and close deals faster with predictive pipeline management.
             </motion.p>
 
@@ -442,7 +478,7 @@ export default function LandingPage() {
         </div>
 
         {/* Social proof */}
-        <motion.div initial="hidden" animate="visible" variants={fadeUp} className="relative max-w-[1280px] mx-auto mt-[120px] text-center">
+        <motion.div initial="hidden" animate="visible" variants={fadeUp} className="relative max-w-[1280px] mx-auto mt-[60px] sm:mt-[90px] lg:mt-[120px] text-center">
           <p className="text-sm text-white/35 mb-8 tracking-wide uppercase">Trusted by AI-forward teams at</p>
           <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6">
             {["Google", "Microsoft", "Slack", "Notion", "GitHub"].map((name) => (
@@ -453,7 +489,7 @@ export default function LandingPage() {
       </section>
 
       {/* AI Capabilities Banner */}
-      <section className="relative py-20 px-8 border-y border-[#2563EB]/10">
+      <section className="relative py-12 sm:py-20 px-4 sm:px-8 border-y border-[#2563EB]/10">
         <div className="max-w-[1280px] mx-auto">
           <motion.div
             initial="hidden"
@@ -481,7 +517,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative py-[160px] px-8">
+      <section id="features" className="relative py-[80px] sm:py-[120px] lg:py-[160px] px-4 sm:px-8">
         <div className="max-w-[1280px] mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-20">
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 text-xs font-medium text-[#2563EB] mb-6">
@@ -517,7 +553,7 @@ export default function LandingPage() {
       </section>
 
       {/* Dashboard Preview Section */}
-      <section className="relative py-[160px] px-8">
+      <section className="relative py-[80px] sm:py-[120px] lg:py-[160px] px-4 sm:px-8">
         <div className="max-w-[1280px] mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-20">
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#14B8A6]/10 border border-[#14B8A6]/20 text-xs font-medium text-[#14B8A6] mb-6">
@@ -642,7 +678,7 @@ export default function LandingPage() {
       </section>
 
       {/* Why Us Section */}
-      <section className="relative py-[160px] px-8">
+      <section className="relative py-[80px] sm:py-[120px] lg:py-[160px] px-4 sm:px-8">
         <div className="max-w-[1280px] mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-20">
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 text-xs font-medium text-[#2563EB] mb-6">
@@ -667,7 +703,7 @@ export default function LandingPage() {
       </section>
 
       {/* Integrations Section */}
-      <section className="relative py-[120px] px-8">
+      <section className="relative py-[60px] sm:py-[90px] lg:py-[120px] px-4 sm:px-8">
         <div className="max-w-[1280px] mx-auto text-center">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger}>
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#14B8A6]/10 border border-[#14B8A6]/20 text-xs font-medium text-[#14B8A6] mb-6">
@@ -691,7 +727,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="relative py-[160px] px-8">
+      <section id="testimonials" className="relative py-[80px] sm:py-[120px] lg:py-[160px] px-4 sm:px-8">
         <div className="max-w-[1280px] mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-20">
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs font-medium text-amber-400 mb-6">Testimonials</motion.span>
@@ -700,7 +736,7 @@ export default function LandingPage() {
 
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-50px" }} variants={stagger} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t) => (
-              <motion.div key={t.name} variants={fadeUp} className="p-8 rounded-[24px] border border-[#2563EB]/[0.08] bg-[#2563EB]/[0.02] hover:bg-[#2563EB]/[0.04] transition-all duration-300">
+              <motion.div key={t.name} variants={fadeUp} className="p-5 sm:p-8 rounded-[24px] border border-[#2563EB]/[0.08] bg-[#2563EB]/[0.02] hover:bg-[#2563EB]/[0.04] transition-all duration-300">
                 <div className="flex gap-1 mb-5">
                   {[...Array(5)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
@@ -721,7 +757,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative py-[160px] px-8">
+      <section id="pricing" className="relative py-[80px] sm:py-[120px] lg:py-[160px] px-4 sm:px-8">
         <div className="max-w-[1080px] mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-20">
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 text-xs font-medium text-[#2563EB] mb-6">Pricing</motion.span>
@@ -736,7 +772,7 @@ export default function LandingPage() {
               <motion.div
                 key={plan.name}
                 variants={fadeUp}
-                className={`relative p-8 rounded-[24px] border flex flex-col ${
+                className={`relative p-5 sm:p-8 rounded-[24px] border flex flex-col ${
                   plan.popular
                     ? "border-[#2563EB]/40 bg-gradient-to-b from-[#2563EB]/10 to-[#2563EB]/[0.02] shadow-2xl shadow-[#2563EB]/10"
                     : "border-[#2563EB]/[0.08] bg-[#2563EB]/[0.02]"
@@ -778,7 +814,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section id="faq" className="relative py-[160px] px-8">
+      <section id="faq" className="relative py-[80px] sm:py-[120px] lg:py-[160px] px-4 sm:px-8">
         <div className="max-w-[720px] mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={stagger} className="text-center mb-16">
             <motion.span variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#14B8A6]/10 border border-[#14B8A6]/20 text-xs font-medium text-[#14B8A6] mb-6">FAQ</motion.span>
@@ -807,7 +843,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="relative py-[160px] px-8">
+      <section className="relative py-[80px] sm:py-[120px] lg:py-[160px] px-4 sm:px-8">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#2563EB]/10 rounded-full blur-[150px]" />
         </div>
@@ -817,7 +853,7 @@ export default function LandingPage() {
               <Brain className="w-4 h-4 text-[#2563EB]" />
               <span>AI is ready for you</span>
             </motion.div>
-            <motion.h2 variants={fadeUp} className="text-[40px] sm:text-[56px] font-bold tracking-[-0.03em] mb-6">
+            <motion.h2 variants={fadeUp} className="text-[32px] sm:text-[40px] md:text-[56px] font-bold tracking-[-0.03em] mb-6">
               Ready to close more deals<br />
               <span className="bg-gradient-to-r from-[#2563EB] to-[#14B8A6] bg-clip-text text-transparent">with AI?</span>
             </motion.h2>
@@ -841,7 +877,7 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative border-t border-[#2563EB]/10 py-12 px-8">
+      <footer className="relative border-t border-[#2563EB]/10 py-12 px-4 sm:px-8">
         <div className="max-w-[1280px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <Logo size="sm" />
           <p className="text-[13px] text-white/30">© {new Date().getFullYear()} OutReach CRM. All rights reserved.</p>

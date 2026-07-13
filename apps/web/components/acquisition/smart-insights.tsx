@@ -24,7 +24,7 @@ const COLOR_MAP = {
 export function SmartInsights({ insights }: SmartInsightsProps) {
   if (insights.length === 0) {
     return (
-      <div className="bg-card border border-border rounded-xl p-5">
+      <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
         <h3 className="text-sm font-semibold mb-3">Smart Insights</h3>
         <p className="text-sm text-muted-foreground">
           Keep logging outreach to unlock personalized insights.
@@ -34,9 +34,9 @@ export function SmartInsights({ insights }: SmartInsightsProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl p-5">
+    <div className="bg-card border border-border rounded-xl p-4 sm:p-5">
       <h3 className="text-sm font-semibold mb-3">Smart Insights</h3>
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {insights.map((insight) => {
           const Icon = ICON_MAP[insight.type];
           const color = COLOR_MAP[insight.type];
@@ -56,3 +56,4 @@ export function SmartInsights({ insights }: SmartInsightsProps) {
     </div>
   );
 }
+

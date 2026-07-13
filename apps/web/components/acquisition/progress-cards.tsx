@@ -20,13 +20,14 @@ const CARDS = [
 
 export function ProgressCards({ progress }: ProgressCardsProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3">
       {CARDS.map((card, i) => {
         const value = progress[card.key as keyof TodaysProgress];
         const Icon = card.icon;
-        const formatted = card.format === "currency"
+        const fmt = "format" in card ? card.format : undefined;
+        const formatted = fmt === "currency"
           ? `₹${value.toLocaleString()}`
-          : card.format === "percent"
+          : fmt === "percent"
           ? `${value}%`
           : value;
 
@@ -36,12 +37,12 @@ export function ProgressCards({ progress }: ProgressCardsProps) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: i * 0.05 }}
-            className="bg-card border border-border rounded-xl p-4 hover:border-border/80 transition-all"
+            className="bg-card border border-border rounded-xl p-3 sm:p-4 hover:border-border/80 transition-all"
           >
             <div className="flex items-start justify-between">
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{card.label}</p>
-                <p className="text-xl font-semibold tabular-nums">{formatted}</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">{card.label}</p>
+                <p className="text-lg sm:text-xl font-semibold tabular-nums">{formatted}</p>
               </div>
               <div className={`p-2 rounded-lg shrink-0 ${card.color}`}>
                 <Icon className="w-4 h-4" />

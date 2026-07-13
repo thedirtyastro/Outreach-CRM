@@ -16,7 +16,7 @@ export default async function DashboardPage() {
         title="Dashboard"
         description={`Good ${getTimeOfDay()}, ${session?.user?.name?.split(" ")[0] ?? "there"}`}
       />
-      <div className="flex-1 p-6">
+      <div className="flex-1 p-4 sm:p-6">
         <DashboardContent stats={stats} />
       </div>
     </>

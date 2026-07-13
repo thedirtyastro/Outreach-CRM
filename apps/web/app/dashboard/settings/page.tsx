@@ -359,7 +359,7 @@ export default function SettingsPage() {
   return (
     <>
       <Header title="Settings" />
-      <div className="flex-1 p-6 max-w-2xl space-y-5">
+      <div className="flex-1 p-4 sm:p-6 max-w-2xl space-y-5">
 
         {/* Profile */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>

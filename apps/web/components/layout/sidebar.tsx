@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
@@ -14,9 +15,11 @@ import {
   ChevronRight,
   Mail,
   Kanban,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/ui/logo";
+import { useSidebarStore } from "@/store/sidebar.store";
 
 const NAV_ITEMS = [
   { label: "Dashboard",  href: "/dashboard",           icon: LayoutDashboard },
@@ -35,17 +38,30 @@ const BOTTOM_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { isOpen, close } = useSidebarStore();
+
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    close();
+  }, [pathname, close]);
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 
-  return (
-    <aside className="fixed left-0 top-0 h-screen w-60 flex flex-col bg-sidebar border-r border-sidebar-border z-40">
+  const sidebarContent = (
+    <>
       {/* Logo */}
-      <div className="flex items-center px-4 h-14 border-b border-sidebar-border shrink-0">
+      <div className="flex items-center justify-between px-4 h-14 border-b border-sidebar-border shrink-0">
         <Logo size="sm" />
+        <button
+          onClick={close}
+          className="md:hidden p-1.5 rounded-lg hover:bg-sidebar-accent/60 transition-colors"
+          aria-label="Close sidebar"
+        >
+          <X className="w-4 h-4 text-sidebar-foreground/70" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -115,6 +131,41 @@ export function Sidebar() {
           );
         })}
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex fixed left-0 top-0 h-screen w-60 flex-col bg-sidebar border-r border-sidebar-border z-40">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile sidebar overlay */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden"
+              onClick={close}
+              aria-hidden="true"
+            />
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed left-0 top-0 h-screen w-64 flex flex-col bg-sidebar border-r border-sidebar-border z-50 md:hidden"
+            >
+              {sidebarContent}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
