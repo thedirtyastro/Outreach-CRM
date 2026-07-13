@@ -21,6 +21,7 @@ export * from "./services/settings.service";
 export * from "./services/analytics.service";
 export * from "./services/dashboard.service";
 export * from "./services/attachment.service";
+export * from "./services/acquisition.service";
 
 export { auth } from "./auth";
 export type { Auth } from "./auth";

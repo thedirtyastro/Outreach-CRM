@@ -34,3 +34,24 @@ export type {
   LeadFilters,
   LeadSort,
 } from "./api";
+
+export type {
+  OutreachPlatform,
+  OutreachType,
+  OutreachStatus,
+  GoalSchedule,
+  IAcquisitionGoal,
+  IOutreachLog,
+  IProductivityStreak,
+  AcquisitionDashboard,
+  TodaysProgress,
+  FunnelStage,
+  WeeklyAnalytics,
+  MonthlyPerformance,
+  PlatformProgress,
+  StreakData,
+  Badge,
+  DailyActivity,
+  ForecastData,
+  Insight,
+} from "./acquisition";
