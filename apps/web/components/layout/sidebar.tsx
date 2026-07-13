@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Mail,
   Kanban,
+  TrendingUp,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -22,14 +23,15 @@ import { Logo } from "@/components/ui/logo";
 import { useSidebarStore } from "@/store/sidebar.store";
 
 const NAV_ITEMS = [
-  { label: "Dashboard",  href: "/dashboard",           icon: LayoutDashboard },
-  { label: "Leads",      href: "/dashboard/leads",     icon: Users },
-  { label: "Pipeline",   href: "/dashboard/pipeline",  icon: Kanban },
-  { label: "Emails",     href: "/dashboard/emails",    icon: Mail },
-  { label: "Follow-ups", href: "/dashboard/followups", icon: CalendarCheck },
-  { label: "Calendar",   href: "/dashboard/calendar",  icon: Calendar },
-  { label: "Analytics",  href: "/dashboard/analytics", icon: BarChart3 },
-  { label: "Templates",  href: "/dashboard/templates", icon: FileText },
+  { label: "Dashboard",    href: "/dashboard",              icon: LayoutDashboard },
+  { label: "Leads",        href: "/dashboard/leads",        icon: Users },
+  { label: "Pipeline",     href: "/dashboard/pipeline",     icon: Kanban },
+  { label: "Emails",       href: "/dashboard/emails",       icon: Mail },
+  { label: "Follow-ups",   href: "/dashboard/followups",    icon: CalendarCheck },
+  { label: "Calendar",     href: "/dashboard/calendar",     icon: Calendar },
+  { label: "Acquisition",  href: "/dashboard/acquisition",  icon: TrendingUp },
+  { label: "Analytics",    href: "/dashboard/analytics",    icon: BarChart3 },
+  { label: "Templates",    href: "/dashboard/templates",    icon: FileText },
 ];
 
 const BOTTOM_ITEMS = [

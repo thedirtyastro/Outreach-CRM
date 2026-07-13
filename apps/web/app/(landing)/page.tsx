@@ -13,6 +13,8 @@ import {
   FileText,
   ChevronDown,
   Globe,
+  Kanban,
+  TrendingUp,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 
@@ -21,10 +23,10 @@ const FEATURES = [
     icon: Users,
     title: "Lead Management",
     description:
-      "Track contacts with full detail views, tags, fuzzy search, multi-filters, bulk actions, and CSV import/export.",
+      "Track contacts with detail views, tags, fuzzy search, multi-filters, bulk actions, and CSV import/export.",
   },
   {
-    icon: Target,
+    icon: Kanban,
     title: "Pipeline Board",
     description:
       "Visual Kanban board with drag-and-drop. Move leads through stages from first contact to deal closed.",
@@ -65,6 +67,12 @@ const FEATURES = [
     description:
       "One-click lead capture from LinkedIn, Twitter, GitHub, and Instagram profiles directly into your CRM.",
   },
+  {
+    icon: TrendingUp,
+    title: "Client Acquisition",
+    description:
+      "Track acquisition goals, streaks, and conversion funnels. Forecast growth and log outreach activity.",
+  },
 ];
 
 const FAQ = [
@@ -94,21 +102,27 @@ export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Logo size="md" />
           <div className="hidden sm:flex items-center gap-8">
             <a
               href="#features"
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Features
             </a>
             <a
+              href="#how-it-works"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              How it works
+            </a>
+            <a
               href="#faq"
-              className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               FAQ
             </a>
@@ -116,13 +130,13 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/login"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               Sign In
             </Link>
             <Link
               href="/signup"
-              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
             >
               Get Started
               <ArrowRight className="w-3.5 h-3.5" />
@@ -137,9 +151,9 @@ export default function LandingPage() {
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-tight mb-5">
             A simple CRM for
             <br />
-            cold outreach
+            <span className="text-primary">cold outreach</span>
           </h1>
-          <p className="text-base sm:text-lg text-gray-500 max-w-xl mx-auto leading-relaxed mb-8">
+          <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed mb-8">
             Track leads from first contact to deal closure. Capture prospects
             from social platforms, manage your pipeline, send tracked emails, and
             stay on top of follow-ups — all in one place.
@@ -147,14 +161,14 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
             >
               Start for free
               <ArrowRight className="w-4 h-4" />
             </Link>
             <a
               href="#features"
-              className="inline-flex items-center gap-2 h-11 px-6 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-2 h-11 px-6 rounded-lg border border-border text-foreground font-medium hover:bg-secondary transition-colors"
             >
               See features
             </a>
@@ -165,14 +179,14 @@ export default function LandingPage() {
       {/* Platforms supported */}
       <section className="pb-16 sm:pb-24 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-sm text-gray-400 mb-4">
+          <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
             Capture leads from
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
             {["LinkedIn", "Twitter / X", "GitHub", "Instagram"].map((name) => (
               <span
                 key={name}
-                className="text-sm font-medium text-gray-500"
+                className="text-sm font-medium text-foreground/70"
               >
                 {name}
               </span>
@@ -182,27 +196,29 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50">
+      <section id="features" className="py-16 sm:py-24 px-4 sm:px-6 border-t border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
               Everything you need for outreach
             </h2>
-            <p className="text-gray-500 max-w-lg mx-auto">
+            <p className="text-muted-foreground max-w-lg mx-auto">
               Built for freelancers and small agencies who want a straightforward
               way to manage their sales pipeline.
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {FEATURES.map((feature) => (
               <div
                 key={feature.title}
-                className="p-5 rounded-lg bg-white border border-gray-100"
+                className="p-5 rounded-xl bg-card border border-border hover:border-border/80 transition-colors"
               >
-                <feature.icon className="w-5 h-5 text-gray-700 mb-3" />
+                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+                  <feature.icon className="w-4 h-4 text-primary" />
+                </div>
                 <h3 className="text-sm font-semibold mb-1.5">{feature.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
               </div>
@@ -212,7 +228,7 @@ export default function LandingPage() {
       </section>
 
       {/* How it works */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6">
+      <section id="how-it-works" className="py-16 sm:py-24 px-4 sm:px-6 border-t border-border">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
@@ -220,7 +236,7 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             {[
               {
                 step: "1",
@@ -247,13 +263,13 @@ export default function LandingPage() {
                   "See your pipeline funnel, email engagement, platform breakdown, and activity trends in the analytics dashboard.",
               },
             ].map((item) => (
-              <div key={item.step} className="flex gap-4">
-                <div className="shrink-0 w-8 h-8 rounded-full bg-gray-900 text-white text-sm font-medium flex items-center justify-center">
+              <div key={item.step} className="flex gap-4 items-start">
+                <div className="shrink-0 w-8 h-8 rounded-lg bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center">
                   {item.step}
                 </div>
                 <div>
                   <h3 className="font-semibold mb-1">{item.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
                     {item.description}
                   </p>
                 </div>
@@ -264,7 +280,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-16 sm:py-24 px-4 sm:px-6 bg-gray-50">
+      <section id="faq" className="py-16 sm:py-24 px-4 sm:px-6 border-t border-border">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-center mb-10">
             Questions & answers
@@ -274,22 +290,22 @@ export default function LandingPage() {
             {FAQ.map((item, i) => (
               <div
                 key={i}
-                className="bg-white border border-gray-100 rounded-lg"
+                className="rounded-xl bg-card border border-border overflow-hidden"
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between p-4 text-left"
+                  className="w-full flex items-center justify-between p-4 text-left hover:bg-secondary/50 transition-colors"
                 >
                   <span className="text-sm font-medium pr-4">{item.q}</span>
                   <ChevronDown
-                    className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${
+                    className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${
                       openFaq === i ? "rotate-180" : ""
                     }`}
                   />
                 </button>
                 {openFaq === i && (
                   <div className="px-4 pb-4">
-                    <p className="text-sm text-gray-500 leading-relaxed">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {item.a}
                     </p>
                   </div>
@@ -301,17 +317,17 @@ export default function LandingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 border-t border-border">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3">
             Ready to organize your outreach?
           </h2>
-          <p className="text-gray-500 mb-6">
+          <p className="text-muted-foreground mb-6">
             Sign up for free and start tracking your leads today.
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-gray-900 text-white font-medium hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
           >
             Get started
             <ArrowRight className="w-4 h-4" />
@@ -320,12 +336,28 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 px-4 sm:px-6">
+      <footer className="border-t border-border py-8 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Logo size="sm" />
-          <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} OutReach CRM. All rights reserved.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-6">
+            <div className="flex items-center gap-6">
+              <Link
+                href="/login"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign Up
+              </Link>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              © {new Date().getFullYear()} OutReach CRM. Developed by Sarukhan Muthuraman.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
