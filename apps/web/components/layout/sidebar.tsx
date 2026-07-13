@@ -11,12 +11,12 @@ import {
   BarChart3,
   FileText,
   Settings,
-  Zap,
   ChevronRight,
   Mail,
   Kanban,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/ui/logo";
 
 const NAV_ITEMS = [
   { label: "Dashboard",  href: "/dashboard",           icon: LayoutDashboard },
@@ -44,11 +44,8 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 h-screen w-60 flex flex-col bg-sidebar border-r border-sidebar-border z-40">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-4 h-14 border-b border-sidebar-border shrink-0">
-        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary/15 border border-primary/25">
-          <Zap className="w-4 h-4 text-primary" />
-        </div>
-        <span className="font-semibold text-sm tracking-tight">ClientFlow CRM</span>
+      <div className="flex items-center px-4 h-14 border-b border-sidebar-border shrink-0">
+        <Logo size="sm" />
       </div>
 
       {/* Navigation */}
